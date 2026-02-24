@@ -1,18 +1,26 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import Hero from "./components/Hero";
-import Explore from "./components/Explore";
-import Events from "./components/Events";
 import Footer from "./components/Footer";
+import ScrollToTop from "./components/ScrollToTop";
+
+import Home from "./pages/Home";
+import EventsPage from "./pages/EventsPage";
+import EventDetail from "./pages/EventDetail";
 
 function App() {
   return (
-    <>
+    <BrowserRouter>
+      <ScrollToTop />   
       <Navbar />
-      <Hero />
-      <Explore />
-      <Events />
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/events" element={<EventsPage />} />
+        <Route path="/events/:id" element={<EventDetail />} />
+      </Routes>
+
       <Footer />
-    </>
+    </BrowserRouter>
   );
 }
 

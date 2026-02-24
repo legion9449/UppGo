@@ -4,6 +4,7 @@
     "title": "Uppsala Music Festival",
     "date": "2026-05-18",
     "location": "Uppsala Castle",
+    "description": "An annual music festival featuring local and international artists across multiple genres.",
     "image": "https://gratisuppsala.se/wp-content/uploads/2024/09/pexels-vishnurnair-1105666-1-scaled.jpg"
   },
   {
@@ -11,6 +12,7 @@
     "title": "Spring Food Market",
     "date": "2026-06-02",
     "location": "Stora Torget",
+    "description": "A vibrant open-air market showcasing local Swedish cuisine and international street food.",
     "image": "https://gratisuppsala.se/wp-content/uploads/2024/08/sam-kimber-cOVNILtRceQ-unsplash.jpg"
   },
   {
@@ -18,6 +20,7 @@
     "title": "River Walk & Nature Tour",
     "date": "2026-06-10",
     "location": "Fyrisån",
+    "description": "Guided nature tour along the beautiful Fyris River with historical insights and scenic views.",
     "image": "https://destinationuppsala.se/wp-content/uploads/2019/05/dragontorpet-05574-6-1200x630.jpg"
   }
 ]
