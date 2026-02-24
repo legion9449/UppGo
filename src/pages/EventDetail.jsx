@@ -49,7 +49,7 @@ function EventDetail() {
   }
 
   return (
-    <div className="min-h-screen pt-32 px-6">
+    <div className="min-h-screen pt-32 pb-40 px-6 bg-gray-50">
       <div className="max-w-4xl mx-auto">
 
         <img
