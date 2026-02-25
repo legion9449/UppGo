@@ -1,10 +1,11 @@
+import heroImage from "../assets/explore/background.jpg";
+
 function Hero() {
   return (
     <section
       className="relative h-screen bg-cover bg-center"
       style={{
-        backgroundImage:
-          "url('https://www.city-guide-stockholm.com/_bibli/pages_images/95/adobestock-275315732-uppsala.jpg')",
+        backgroundImage: `url(${heroImage})`,
       }}
     >
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70"></div>
