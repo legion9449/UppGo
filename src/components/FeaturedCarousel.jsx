@@ -18,11 +18,14 @@ function FeaturedCarousel() {
 
   // Auto slide
   useEffect(() => {
+    if (events.length === 0) return;
+
     const interval = setInterval(() => {
       nextSlide();
     }, 6000);
+
     return () => clearInterval(interval);
-  }, [events]);
+  }, [events, current]);
 
   const nextSlide = () => {
     setCurrent((prev) =>
@@ -36,7 +39,7 @@ function FeaturedCarousel() {
     );
   };
 
-  // Swipe detection
+  // Swipe support
   const handleTouchStart = (e) => {
     touchStartX.current = e.targetTouches[0].clientX;
   };
@@ -56,7 +59,7 @@ function FeaturedCarousel() {
 
   return (
     <section
-      className="relative h-[500px] overflow-hidden"
+      className="relative h-[650px] md:h-[750px] overflow-hidden"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -74,7 +77,7 @@ function FeaturedCarousel() {
           >
             {/* Parallax Background */}
             <div
-              className="absolute inset-0 bg-cover bg-center scale-110"
+              className="absolute inset-0 bg-cover bg-center scale-110 transition-transform duration-[6000ms]"
               style={{
                 backgroundImage: `url(${event.image})`,
               }}
@@ -82,19 +85,30 @@ function FeaturedCarousel() {
 
             <div className="absolute inset-0 bg-black/50"></div>
 
+            {/* Content */}
             <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4">
+
+              {/* Branding */}
+              <p className="uppercase tracking-widest text-sm mb-2 opacity-80">
+                Discover Uppsala
+              </p>
+
+              {/* Featured Badge */}
               <span className="mb-4 bg-white text-black px-4 py-1 rounded-full text-sm font-semibold">
-                Featured
+                Featured Event
               </span>
 
+              {/* Title */}
               <h2 className="text-4xl md:text-6xl font-bold mb-4">
                 {event.title}
               </h2>
 
+              {/* Info */}
               <p className="mb-6 text-lg">
                 {event.location} • {event.date}
               </p>
 
+              {/* CTA */}
               <Link
                 to={`/events/${event.id}`}
                 className="bg-white text-black px-8 py-3 rounded-full font-semibold hover:scale-105 transition"
@@ -127,7 +141,7 @@ function FeaturedCarousel() {
           <div
             key={index}
             onClick={() => setCurrent(index)}
-            className={`w-3 h-3 rounded-full cursor-pointer ${
+            className={`w-3 h-3 rounded-full cursor-pointer transition ${
               index === current
                 ? "bg-white"
                 : "bg-white/40"

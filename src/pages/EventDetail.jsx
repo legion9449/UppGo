@@ -11,20 +11,30 @@ function EventDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/events.json")
-      .then((response) => response.json())
-      .then((data) => {
-        const foundEvent = data.find(
-          (item) => item.id === Number(id)
-        );
-        setEvent(foundEvent);
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error loading event:", error);
-        setLoading(false);
-      });
-  }, [id]);
+  const loadEvent = async () => {
+    try {
+      const response = await fetch("/events.json");
+      const defaultEvents = await response.json();
+
+      const adminEvents =
+        JSON.parse(localStorage.getItem("adminEvents")) || [];
+
+      const allEvents = [...defaultEvents, ...adminEvents];
+
+      const foundEvent = allEvents.find(
+        (item) => item.id === Number(id)
+      );
+
+      setEvent(foundEvent);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error loading event:", error);
+      setLoading(false);
+    }
+  };
+
+  loadEvent();
+}, [id]);
 
   if (loading) {
     return (

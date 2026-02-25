@@ -7,7 +7,7 @@ function Home() {
   return (
     <>
     
-      <Hero />
+      {/*<Hero />*/}
       <FeaturedCarousel />
       <Explore />
       <Events />
