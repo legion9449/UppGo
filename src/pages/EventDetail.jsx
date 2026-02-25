@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
 
 function EventDetail() {
   const { id } = useParams();
@@ -48,35 +50,80 @@ function EventDetail() {
     );
   }
 
+  // ✅ Custom Marker Icon (Stable CDN version)
+  const customIcon = new L.Icon({
+    iconUrl:
+      "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    shadowUrl:
+      "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+  });
+
   return (
-    <div className="min-h-screen pt-32 pb-40 px-6 bg-gray-50">
+    <div className="min-h-screen pt-32 px-6 pb-24">
       <div className="max-w-4xl mx-auto">
 
+        {/* Image */}
         <img
           src={event.image}
           alt={event.title}
           className="w-full h-96 object-cover rounded-2xl mb-8"
         />
 
+        {/* Title */}
         <h1 className="text-4xl font-bold mb-4">
           {event.title}
         </h1>
 
+        {/* Date */}
         <p className="text-lg text-gray-600 mb-2">
           📅 {event.date}
         </p>
 
+        {/* Location */}
         <p className="text-lg text-gray-600 mb-6">
           📍 {event.location}
         </p>
 
-        <p className="text-gray-700 leading-relaxed">
+        {/* Description */}
+        <p className="text-gray-700 leading-relaxed mb-10">
           {event.description}
         </p>
 
+        {/* 🗺 Leaflet Map */}
+        {event.coordinates && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-semibold mb-4">
+              Event Location
+            </h2>
+
+            <MapContainer
+              center={[event.coordinates.lat, event.coordinates.lng]}
+              zoom={15}
+              className="h-96 w-full rounded-2xl shadow-lg"
+            >
+              <TileLayer
+                attribution="&copy; OpenStreetMap contributors"
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              <Marker
+                position={[
+                  event.coordinates.lat,
+                  event.coordinates.lng,
+                ]}
+                icon={customIcon}
+              >
+                <Popup>{event.title}</Popup>
+              </Marker>
+            </MapContainer>
+          </div>
+        )}
+
+        {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
-          className="mt-8 border border-black px-6 py-3 rounded-full hover:bg-black hover:text-white transition"
+          className="mt-10 border border-black px-6 py-3 rounded-full hover:bg-black hover:text-white transition"
         >
           ← Back
         </button>
