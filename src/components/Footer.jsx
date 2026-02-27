@@ -1,3 +1,4 @@
+import logoFull from "../assets/logo-full.png";
 function Footer() {
   return (
     <footer className="bg-black text-white pt-16 pb-8">
@@ -8,7 +9,11 @@ function Footer() {
 
           {/* Brand */}
           <div>
-            <h2 className="text-2xl font-bold mb-4">UppGo</h2>
+            <img
+            src={logoFull}
+            alt="UppGo"
+            className="h-24 object-contain mb-6"
+            />
             <p className="text-gray-400">
               Discover events, culture, food, and experiences
               in one of Sweden’s most beautiful cities.
