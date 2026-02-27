@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import EventsPage from "./pages/EventsPage";
 import EventDetail from "./pages/EventDetail";
 import NotFound from "./pages/NotFound";
+import AdminPage from "./pages/AdminPage";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/events" element={<EventsPage />} />
         <Route path="/events/:id" element={<EventDetail />} />
         <Route path="*" element={<NotFound />} />
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
 
       <Footer />

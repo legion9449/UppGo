@@ -1,26 +1,28 @@
+import eventsImg from "../assets/explore/events.webp";
+import foodImg from "../assets/explore/food.webp";
+import natureImg from "../assets/explore/nature.jpg";
+import stayImg from "../assets/explore/stay.webp";
+
 function Explore() {
   const items = [
-    {
-      title: "Events",
-      image:
-        "https://visitsweden.com/_next/image/?url=https%3A%2F%2Fs3-eu-north-1.amazonaws.com%3A443%2Fpy3.visitsweden.com%2Foriginal_images%2FBrnnbollsyraniUme_CMSTemplate.jpg&w=1980&q=75",
-    },
-    {
-      title: "Food & Drink",
-      image:
-        "https://visitsweden.com/_next/image/?url=https%3A%2F%2Fs3-eu-north-1.amazonaws.com%3A443%2Fpy3.visitsweden.com%2Foriginal_images%2Fweb_farmers20market_mat_kristin_Lagerqvist-310-CMSTemplate_BoYNUq8.jpg&w=1980&q=75",
-    },
-    {
-      title: "Nature",
-      image:
-        "https://www.city-guide-stockholm.com/_bibli/pages_images/95/adobestock-242174221-uppsala.jpg",
-    },
-    {
-      title: "Stay",
-      image:
-        "https://destinationuppsala.se/wp-content/uploads/2025/09/kapellskars-camping-press.webp",
-    },
-  ];
+  {
+    title: "Events",
+    image: eventsImg,
+  },
+  {
+    title: "Food & Drink",
+    image: foodImg,
+  },
+  {
+    title: "Nature",
+    image: natureImg,
+  },
+  {
+    title: "Stay",
+    image: stayImg,
+  },
+];
+  
 
   return (
     <section className="py-20 bg-white">
