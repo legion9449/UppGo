@@ -11,30 +11,16 @@ function EventDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  const loadEvent = async () => {
-    try {
-      const response = await fetch("/events.json");
-      const defaultEvents = await response.json();
+    const storedEvents =
+      JSON.parse(localStorage.getItem("allEvents")) || [];
 
-      const adminEvents =
-        JSON.parse(localStorage.getItem("adminEvents")) || [];
+    const foundEvent = storedEvents.find(
+      (item) => item.id === Number(id)
+    );
 
-      const allEvents = [...defaultEvents, ...adminEvents];
-
-      const foundEvent = allEvents.find(
-        (item) => item.id === Number(id)
-      );
-
-      setEvent(foundEvent);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error loading event:", error);
-      setLoading(false);
-    }
-  };
-
-  loadEvent();
-}, [id]);
+    setEvent(foundEvent);
+    setLoading(false);
+  }, [id]);
 
   if (loading) {
     return (
@@ -60,7 +46,7 @@ function EventDetail() {
     );
   }
 
-  // ✅ Custom Marker Icon (Stable CDN version)
+  // Stable custom marker icon (fixes broken marker issue)
   const customIcon = new L.Icon({
     iconUrl:
       "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -101,7 +87,7 @@ function EventDetail() {
           {event.description}
         </p>
 
-        {/* 🗺 Leaflet Map */}
+        {/* Leaflet Map */}
         {event.coordinates && (
           <div className="mt-12">
             <h2 className="text-2xl font-semibold mb-4">
@@ -109,7 +95,10 @@ function EventDetail() {
             </h2>
 
             <MapContainer
-              center={[event.coordinates.lat, event.coordinates.lng]}
+              center={[
+                event.coordinates.lat,
+                event.coordinates.lng,
+              ]}
               zoom={15}
               className="h-96 w-full rounded-2xl shadow-lg"
             >
@@ -117,6 +106,7 @@ function EventDetail() {
                 attribution="&copy; OpenStreetMap contributors"
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
+
               <Marker
                 position={[
                   event.coordinates.lat,

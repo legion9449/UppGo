@@ -1,150 +1,218 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { HeartIcon as HeartOutline } from "@heroicons/react/24/outline";
-import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
 
 function Events() {
   const [events, setEvents] = useState([]);
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All");
-  const [showUpcoming, setShowUpcoming] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [eventTypeFilter, setEventTypeFilter] = useState("All");
+  const [sortOption, setSortOption] = useState("newest");
 
-  // ⭐ Favorites stored in localStorage
-  const [favorites, setFavorites] = useState(() => {
-    const saved = localStorage.getItem("favorites");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const isAdmin = localStorage.getItem("isAdmin") === "true";
 
   useEffect(() => {
-  Promise.all([
-    fetch("/events.json").then((res) => res.json()),
-  ]).then(([defaultEvents]) => {
-    const adminEvents =
-      JSON.parse(localStorage.getItem("adminEvents")) || [];
+    const storedEvents =
+      JSON.parse(localStorage.getItem("allEvents")) || [];
+    setEvents(storedEvents);
+  }, []);
 
-    setEvents([...defaultEvents, ...adminEvents]);
-  });
-}, []);
+  // Unique categories
+  const categories = [
+    ...new Set(events.map((event) => event.category)),
+  ];
 
-  const toggleFavorite = (eventId) => {
-    let updatedFavorites;
-
-    if (favorites.includes(eventId)) {
-      updatedFavorites = favorites.filter((id) => id !== eventId);
+  const toggleCategory = (cat) => {
+    if (selectedCategories.includes(cat)) {
+      setSelectedCategories(
+        selectedCategories.filter((c) => c !== cat)
+      );
     } else {
-      updatedFavorites = [...favorites, eventId];
+      setSelectedCategories([...selectedCategories, cat]);
     }
-
-    setFavorites(updatedFavorites);
-    localStorage.setItem("favorites", JSON.stringify(updatedFavorites));
   };
 
-  const today = new Date();
+  const clearFilters = () => {
+    setSelectedCategories([]);
+    setSearch("");
+    setEventTypeFilter("All");
+    setSortOption("newest");
+  };
 
-  const filteredEvents = events.filter((event) => {
+  // FILTERING
+  let filteredEvents = events.filter((event) => {
     const matchesSearch = event.title
       .toLowerCase()
       .includes(search.toLowerCase());
 
     const matchesCategory =
-      category === "All" || event.category === category;
+      selectedCategories.length === 0 ||
+      selectedCategories.includes(event.category);
 
-    const matchesUpcoming =
-      !showUpcoming || new Date(event.date) >= today;
+    const matchesType =
+      eventTypeFilter === "All" ||
+      (event.eventType || "Non-Nations") === eventTypeFilter;
 
-    return matchesSearch && matchesCategory && matchesUpcoming;
+    return matchesSearch && matchesCategory && matchesType;
+  });
+
+  // SORTING
+  filteredEvents = filteredEvents.sort((a, b) => {
+    if (sortOption === "newest") {
+      return new Date(b.date) - new Date(a.date);
+    }
+
+    if (sortOption === "oldest") {
+      return new Date(a.date) - new Date(b.date);
+    }
+
+    if (sortOption === "az") {
+      return a.title.localeCompare(b.title);
+    }
+
+    return 0;
   });
 
   return (
     <section className="py-24 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto px-6">
 
-        <h2 className="text-4xl font-bold mb-8 text-center">
-          Upcoming Events
-        </h2>
+        {/* Header */}
+        <div className="mb-12">
+          <h2 className="text-4xl font-bold mb-4">
+            Upcoming Events
+          </h2>
+          <p className="text-gray-600">
+            Discover what's happening in Uppsala.
+          </p>
+        </div>
 
-        {/* 🔎 Search + Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-12 justify-between">
+        {/* Search + Filters + Sorting */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
 
+          {/* Search */}
           <input
             type="text"
             placeholder="Search events..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="px-4 py-3 rounded-lg border w-full md:w-1/3"
+            className="flex-1 border px-5 py-3 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-black"
           />
 
+          {/* Type Filter */}
           <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="px-4 py-3 rounded-lg border w-full md:w-1/4"
+            value={eventTypeFilter}
+            onChange={(e) => setEventTypeFilter(e.target.value)}
+            className="border px-5 py-3 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-black"
           >
-            <option>All</option>
-            <option>Music</option>
-            <option>Food</option>
-            <option>Nature</option>
+            <option value="All">All Types</option>
+            <option value="Nations">Nations</option>
+            <option value="Non-Nations">Non-Nations</option>
           </select>
 
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={showUpcoming}
-              onChange={() => setShowUpcoming(!showUpcoming)}
-            />
-            Upcoming only
-          </label>
+          {/* Sorting */}
+          <select
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+            className="border px-5 py-3 rounded-full shadow-sm focus:outline-none focus:ring-2 focus:ring-black"
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="az">Title A–Z</option>
+          </select>
+
         </div>
 
-        {/* Events Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredEvents.map((event) => (
-            <Link key={event.id} to={`/events/${event.id}`}>
-              <div className="relative bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition duration-300">
+        {/* Category Buttons */}
+        <div className="flex flex-wrap gap-4 mb-12">
+          {categories.map((cat) => {
+            const active = selectedCategories.includes(cat);
 
-                {/* Image */}
-                <img
-                  src={event.image}
-                  alt={event.title}
-                  className="w-full h-64 object-cover"
-                />
+            return (
+              <button
+                key={cat}
+                onClick={() => toggleCategory(cat)}
+                className={`px-5 py-2 rounded-full border transition-all duration-300 ${
+                  active
+                    ? "bg-black text-white border-black scale-105"
+                    : "bg-white text-black border-gray-300 hover:bg-black hover:text-white"
+                }`}
+              >
+                {cat}
+              </button>
+            );
+          })}
 
-                {/* ❤️ Favorite Button */}
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleFavorite(event.id);
-                  }}
-                  className="absolute top-4 right-4 bg-black/40 backdrop-blur-md p-2 rounded-full"
-                >
-                  {favorites.includes(event.id) ? (
-                    <HeartSolid className="w-7 h-7 text-red-500 hover:scale-110 transition-transform duration-200" />
-                  ) : (
-                    <HeartOutline className="w-7 h-7 text-white hover:text-red-400 hover:scale-110 transition-all duration-200" />
-                  )}
-                </button>
+          {(selectedCategories.length > 0 ||
+            search ||
+            eventTypeFilter !== "All") && (
+            <button
+              onClick={clearFilters}
+              className="px-5 py-2 rounded-full border border-red-400 text-red-500 hover:bg-red-500 hover:text-white transition"
+            >
+              Clear Filters
+            </button>
+          )}
+        </div>
 
-                {/* Content */}
+        {/* Event Count */}
+        <div className="mb-6 text-gray-500">
+          {filteredEvents.length} event(s) found
+        </div>
+
+        {/* Grid */}
+        {filteredEvents.length === 0 ? (
+          <div className="text-center text-gray-500 mt-20">
+            No events found.
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredEvents.map((event) => (
+              <div
+                key={event.id}
+                className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition duration-300 group"
+              >
+
+                <Link to={`/events/${event.id}`}>
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={event.image}
+                      alt={event.title}
+                      className="w-full h-64 object-cover group-hover:scale-105 transition duration-500"
+                    />
+                    <div className="absolute top-4 left-4 bg-white px-4 py-2 rounded-full text-sm font-semibold shadow">
+                      {event.date}
+                    </div>
+                  </div>
+                </Link>
+
                 <div className="p-6">
                   <h3 className="text-xl font-semibold mb-2">
                     {event.title}
                   </h3>
-                  <p className="text-gray-600 mb-1">
+
+                  <p className="text-gray-600 mb-4">
                     {event.location}
                   </p>
-                  <p className="text-sm text-gray-500">
-                    {event.date}
-                  </p>
+
+                  <span className="text-sm bg-gray-100 px-3 py-1 rounded-full">
+                    {event.category}
+                  </span>
+
+                  {isAdmin && (
+                    <div className="mt-4">
+                      <Link
+                        to={`/admin/edit/${event.id}`}
+                        className="text-sm text-blue-600 hover:underline"
+                      >
+                        Edit
+                      </Link>
+                    </div>
+                  )}
                 </div>
 
               </div>
-            </Link>
-          ))}
-        </div>
-
-        {filteredEvents.length === 0 && (
-          <p className="text-center mt-10 text-gray-500">
-            No events found.
-          </p>
+            ))}
+          </div>
         )}
 
       </div>

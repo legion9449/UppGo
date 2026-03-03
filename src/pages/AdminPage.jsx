@@ -1,138 +1,171 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 function AdminPage() {
-  const navigate = useNavigate();
+  const [events, setEvents] = useState([]);
 
-  const [formData, setFormData] = useState({
-    title: "",
-    date: "",
-    location: "",
-    category: "Music",
-    description: "",
-    image: "",
-    featured: false,
-  });
+  useEffect(() => {
+    const storedEvents =
+      JSON.parse(localStorage.getItem("allEvents")) || [];
+    setEvents(storedEvents);
+  }, []);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const deleteEvent = (id) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this event?"
+    );
 
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  };
+    if (!confirmDelete) return;
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    const savedEvents =
-      JSON.parse(localStorage.getItem("adminEvents")) || [];
-
-    const newEvent = {
-      ...formData,
-      id: Date.now(),
-      coordinates: {
-        lat: 59.8586,
-        lng: 17.6369,
-      },
-    };
-
-    const updatedEvents = [...savedEvents, newEvent];
+    const updatedEvents = events.filter(
+      (event) => event.id !== id
+    );
 
     localStorage.setItem(
-      "adminEvents",
+      "allEvents",
       JSON.stringify(updatedEvents)
     );
 
-    alert("Event Added Successfully!");
-
-    navigate("/events");
+    setEvents(updatedEvents);
   };
 
+  // Dashboard Stats
+  const totalEvents = events.length;
+  const nationsCount = events.filter(
+    (e) => e.eventType === "Nations"
+  ).length;
+  const nonNationsCount = events.filter(
+    (e) => e.eventType === "Non-Nations"
+  ).length;
+  const featuredCount = events.filter(
+    (e) => e.featured
+  ).length;
+
   return (
-    <div className="min-h-screen pt-32 px-6 pb-24">
-      <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen pt-32 px-6 bg-gray-100">
+      <div className="max-w-7xl mx-auto">
 
-        <h1 className="text-3xl font-bold mb-8">
-          Admin Panel
-        </h1>
+        {/* Dashboard Header */}
+        <div className="flex justify-between items-center mb-12">
+          <h1 className="text-4xl font-bold">
+            Admin Dashboard
+          </h1>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6 bg-white p-8 rounded-2xl shadow-lg"
-        >
-
-          <input
-            type="text"
-            name="title"
-            placeholder="Event Title"
-            required
-            onChange={handleChange}
-            className="w-full border px-4 py-3 rounded-lg"
-          />
-
-          <input
-            type="date"
-            name="date"
-            required
-            onChange={handleChange}
-            className="w-full border px-4 py-3 rounded-lg"
-          />
-
-          <input
-            type="text"
-            name="location"
-            placeholder="Location"
-            required
-            onChange={handleChange}
-            className="w-full border px-4 py-3 rounded-lg"
-          />
-
-          <select
-            name="category"
-            onChange={handleChange}
-            className="w-full border px-4 py-3 rounded-lg"
+          <Link
+            to="/admin/add"
+            className="bg-black text-white px-6 py-3 rounded-full"
           >
-            <option>Music</option>
-            <option>Food</option>
-            <option>Nature</option>
-          </select>
+            + Add Event
+          </Link>
+        </div>
 
-          <textarea
-            name="description"
-            placeholder="Description"
-            required
-            onChange={handleChange}
-            className="w-full border px-4 py-3 rounded-lg"
-          />
+        {/* Stats Cards */}
+        <div className="grid md:grid-cols-4 gap-6 mb-12">
 
-          <input
-            type="text"
-            name="image"
-            placeholder="Image URL (must be in /public/images)"
-            required
-            onChange={handleChange}
-            className="w-full border px-4 py-3 rounded-lg"
-          />
+          <div className="bg-white p-6 rounded-2xl shadow">
+            <h3 className="text-gray-500 text-sm">
+              Total Events
+            </h3>
+            <p className="text-3xl font-bold">
+              {totalEvents}
+            </p>
+          </div>
 
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="featured"
-              onChange={handleChange}
-            />
-            Featured Event
-          </label>
+          <div className="bg-white p-6 rounded-2xl shadow">
+            <h3 className="text-gray-500 text-sm">
+              Nations
+            </h3>
+            <p className="text-3xl font-bold">
+              {nationsCount}
+            </p>
+          </div>
 
-          <button
-            type="submit"
-            className="bg-black text-white px-6 py-3 rounded-full hover:opacity-90 transition"
-          >
-            Add Event
-          </button>
+          <div className="bg-white p-6 rounded-2xl shadow">
+            <h3 className="text-gray-500 text-sm">
+              Non-Nations
+            </h3>
+            <p className="text-3xl font-bold">
+              {nonNationsCount}
+            </p>
+          </div>
 
-        </form>
+          <div className="bg-white p-6 rounded-2xl shadow">
+            <h3 className="text-gray-500 text-sm">
+              Featured
+            </h3>
+            <p className="text-3xl font-bold">
+              {featuredCount}
+            </p>
+          </div>
+
+        </div>
+
+        {/* Events Table */}
+        <div className="bg-white rounded-2xl shadow overflow-hidden">
+          <table className="w-full text-left">
+
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                <th className="p-4">Title</th>
+                <th className="p-4">Date</th>
+                <th className="p-4">Type</th>
+                <th className="p-4">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {events.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="4"
+                    className="p-6 text-center text-gray-500"
+                  >
+                    No events found.
+                  </td>
+                </tr>
+              ) : (
+                events.map((event) => (
+                  <tr
+                    key={event.id}
+                    className="border-b hover:bg-gray-50 transition"
+                  >
+                    <td className="p-4 font-medium">
+                      {event.title}
+                    </td>
+
+                    <td className="p-4">
+                      {event.date}
+                    </td>
+
+                    <td className="p-4">
+                      {event.eventType || "Non-Nations"}
+                    </td>
+
+                    <td className="p-4 space-x-4">
+
+                      <Link
+                        to={`/admin/edit/${event.id}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        Edit
+                      </Link>
+
+                      <button
+                        onClick={() => deleteEvent(event.id)}
+                        className="text-red-500 hover:underline"
+                      >
+                        Delete
+                      </button>
+
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+
+          </table>
+        </div>
+
       </div>
     </div>
   );

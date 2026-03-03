@@ -7,25 +7,35 @@ function FeaturedCarousel() {
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
+  const loadFeaturedEvents = () => {
+    const storedEvents =
+      JSON.parse(localStorage.getItem("allEvents")) || [];
+
+    const featuredEvents = storedEvents.filter(
+      (event) => event.featured === true
+    );
+
+    setEvents(featuredEvents);
+  };
+
+  // Load initially
   useEffect(() => {
-    fetch("/events.json")
-      .then((res) => res.json())
-      .then((data) => {
-        const featured = data.filter((e) => e.featured);
-        setEvents(featured);
-      });
+    loadFeaturedEvents();
   }, []);
 
-  // Auto slide
+  // Listen for storage updates (multi-tab support)
   useEffect(() => {
-    if (events.length === 0) return;
+    const handleStorageChange = (e) => {
+      if (e.key === "allEvents") {
+        loadFeaturedEvents();
+      }
+    };
 
-    const interval = setInterval(() => {
-      nextSlide();
-    }, 6000);
+    window.addEventListener("storage", handleStorageChange);
 
-    return () => clearInterval(interval);
-  }, [events, current]);
+    return () =>
+      window.removeEventListener("storage", handleStorageChange);
+  }, []);
 
   const nextSlide = () => {
     setCurrent((prev) =>
@@ -38,6 +48,17 @@ function FeaturedCarousel() {
       prev === 0 ? events.length - 1 : prev - 1
     );
   };
+
+  // Auto slide
+  useEffect(() => {
+    if (events.length === 0) return;
+
+    const interval = setInterval(() => {
+      nextSlide();
+    }, 6000);
+
+    return () => clearInterval(interval);
+  }, [events]);
 
   // Swipe support
   const handleTouchStart = (e) => {
@@ -71,44 +92,39 @@ function FeaturedCarousel() {
         }}
       >
         {events.map((event) => (
-          <div
-            key={event.id}
-            className="min-w-full relative"
-          >
-            {/* Parallax Background */}
-            <div
-              className="absolute inset-0 bg-cover bg-center scale-110 transition-transform duration-[6000ms]"
-              style={{
-                backgroundImage: `url(${event.image})`,
-              }}
-            ></div>
+          <div key={event.id} className="min-w-full relative">
+            
+            {/* Background Image using <img> */}
+            <div className="absolute inset-0">
+            <img
+            src={event.image}
+            alt={event.title}
+            className="w-full h-full object-cover object-center"
+            />
+            </div>
 
-            <div className="absolute inset-0 bg-black/50"></div>
+            {/* Dark Overlay */}
+            <div className="absolute inset-0 bg-black/50" />
 
             {/* Content */}
             <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4">
-
-              {/* Branding */}
+              
               <p className="uppercase tracking-widest text-sm mb-2 opacity-80">
                 Discover Uppsala
               </p>
 
-              {/* Featured Badge */}
               <span className="mb-4 bg-white text-black px-4 py-1 rounded-full text-sm font-semibold">
                 Featured Event
               </span>
 
-              {/* Title */}
               <h2 className="text-4xl md:text-6xl font-bold mb-4">
                 {event.title}
               </h2>
 
-              {/* Info */}
               <p className="mb-6 text-lg">
                 {event.location} • {event.date}
               </p>
 
-              {/* CTA */}
               <Link
                 to={`/events/${event.id}`}
                 className="bg-white text-black px-8 py-3 rounded-full font-semibold hover:scale-105 transition"
@@ -141,7 +157,7 @@ function FeaturedCarousel() {
           <div
             key={index}
             onClick={() => setCurrent(index)}
-            className={`w-3 h-3 rounded-full cursor-pointer transition ${
+            className={`w-3 h-3 rounded-full cursor-pointer ${
               index === current
                 ? "bg-white"
                 : "bg-white/40"
