@@ -1,129 +1,59 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import L from "leaflet";
+import api from "../api";
+import EventMap from "../components/EventMap";
 
 function EventDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-
   const [event, setEvent] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedEvents =
-      JSON.parse(localStorage.getItem("allEvents")) || [];
-
-    const foundEvent = storedEvents.find(
-      (item) => item.id === Number(id)
-    );
-
-    setEvent(foundEvent);
-    setLoading(false);
+    api.get(`/events/${id}`)
+      .then((res) => setEvent(res.data))
+      .catch((err) => console.error(err));
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen pt-32 text-center">
-        <p className="text-gray-500">Loading event...</p>
-      </div>
-    );
-  }
-
   if (!event) {
-    return (
-      <div className="min-h-screen pt-32 text-center">
-        <h1 className="text-3xl font-bold mb-4">
-          Event Not Found
-        </h1>
-        <button
-          onClick={() => navigate("/events")}
-          className="bg-black text-white px-6 py-3 rounded-full"
-        >
-          Back to Events
-        </button>
-      </div>
-    );
+    return <p className="pt-32 text-center">Loading...</p>;
   }
-
-  // Stable custom marker icon (fixes broken marker issue)
-  const customIcon = new L.Icon({
-    iconUrl:
-      "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-    shadowUrl:
-      "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-  });
 
   return (
-    <div className="min-h-screen pt-32 px-6 pb-24">
+    <div className="min-h-screen pt-32 px-6">
       <div className="max-w-4xl mx-auto">
 
-        {/* Image */}
         <img
-          src={event.image}
+          src={`http://127.0.0.1:8000${event.image}`}
           alt={event.title}
           className="w-full h-96 object-cover rounded-2xl mb-8"
         />
 
-        {/* Title */}
         <h1 className="text-4xl font-bold mb-4">
           {event.title}
         </h1>
 
-        {/* Date */}
-        <p className="text-lg text-gray-600 mb-2">
+        <p className="text-gray-600 mb-2">
           📅 {event.date}
         </p>
 
-        {/* Location */}
-        <p className="text-lg text-gray-600 mb-6">
+        <p className="text-gray-600 mb-6">
           📍 {event.location}
         </p>
 
-        {/* Description */}
-        <p className="text-gray-700 leading-relaxed mb-10">
+        <p className="text-gray-700 mb-8">
           {event.description}
         </p>
 
-        {/* Leaflet Map */}
-        {event.coordinates && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-semibold mb-4">
-              Event Location
-            </h2>
+        {/* ✅ MAP SECTION */}
+        <EventMap
+          latitude={Number(event.latitude)}
+          longitude={Number(event.longitude)}
+          title={event.title}
+        />
 
-            <MapContainer
-              center={[
-                event.coordinates.lat,
-                event.coordinates.lng,
-              ]}
-              zoom={15}
-              className="h-96 w-full rounded-2xl shadow-lg"
-            >
-              <TileLayer
-                attribution="&copy; OpenStreetMap contributors"
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-
-              <Marker
-                position={[
-                  event.coordinates.lat,
-                  event.coordinates.lng,
-                ]}
-                icon={customIcon}
-              >
-                <Popup>{event.title}</Popup>
-              </Marker>
-            </MapContainer>
-          </div>
-        )}
-
-        {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
-          className="mt-10 border border-black px-6 py-3 rounded-full hover:bg-black hover:text-white transition"
+          className="mt-8 border border-black px-6 py-3 rounded-full hover:bg-black hover:text-white transition"
         >
           ← Back
         </button>

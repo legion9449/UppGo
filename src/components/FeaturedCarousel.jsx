@@ -1,170 +1,142 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import api from "../api";
 
 function FeaturedCarousel() {
+
   const [events, setEvents] = useState([]);
   const [current, setCurrent] = useState(0);
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
 
-  const loadFeaturedEvents = () => {
-    const storedEvents =
-      JSON.parse(localStorage.getItem("allEvents")) || [];
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
 
-    const featuredEvents = storedEvents.filter(
-      (event) => event.featured === true
-    );
+  const minSwipeDistance = 50;
 
-    setEvents(featuredEvents);
-  };
-
-  // Load initially
   useEffect(() => {
-    loadFeaturedEvents();
+    api.get("/events?featured=1").then((res) => {
+      setEvents(res.data);
+    });
   }, []);
 
-  // Listen for storage updates (multi-tab support)
   useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === "allEvents") {
-        loadFeaturedEvents();
-      }
-    };
 
-    window.addEventListener("storage", handleStorageChange);
-
-    return () =>
-      window.removeEventListener("storage", handleStorageChange);
-  }, []);
-
-  const nextSlide = () => {
-    setCurrent((prev) =>
-      prev === events.length - 1 ? 0 : prev + 1
-    );
-  };
-
-  const prevSlide = () => {
-    setCurrent((prev) =>
-      prev === 0 ? events.length - 1 : prev - 1
-    );
-  };
-
-  // Auto slide
-  useEffect(() => {
     if (events.length === 0) return;
 
     const interval = setInterval(() => {
-      nextSlide();
-    }, 6000);
+      setCurrent((prev) => (prev + 1) % events.length);
+    }, 5000);
 
     return () => clearInterval(interval);
-  }, [events]);
 
-  // Swipe support
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.targetTouches[0].clientX;
+  }, [events, current]);
+
+
+
+  const nextSlide = () => {
+    setCurrent((prev) => (prev + 1) % events.length);
   };
 
-  const handleTouchMove = (e) => {
-    touchEndX.current = e.targetTouches[0].clientX;
+  const prevSlide = () => {
+    setCurrent((prev) => (prev - 1 + events.length) % events.length);
   };
 
-  const handleTouchEnd = () => {
-    const distance = touchStartX.current - touchEndX.current;
 
-    if (distance > 50) nextSlide();
-    if (distance < -50) prevSlide();
+
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
   };
+
+  const onTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+
+    if (distance > minSwipeDistance) nextSlide();
+    if (distance < -minSwipeDistance) prevSlide();
+  };
+
+
 
   if (events.length === 0) return null;
 
   return (
     <section
-      className="relative h-[650px] md:h-[750px] overflow-hidden"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+      className="relative overflow-hidden h-[650px] md:h-[750px]"
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
     >
+
       <div
-        className="flex h-full transition-transform duration-700 ease-in-out"
+        className="flex transition-transform duration-700 ease-in-out"
         style={{
           transform: `translateX(-${current * 100}%)`,
         }}
       >
+
         {events.map((event) => (
-          <div key={event.id} className="min-w-full relative">
-            
-            {/* Background Image using <img> */}
-            <div className="absolute inset-0">
+
+          <Link
+            key={event.id}
+            to={`/events/${event.id}`}
+            className="min-w-full relative block"
+          >
+
             <img
-            src={event.image}
-            alt={event.title}
-            className="w-full h-full object-cover object-center"
+              src={`http://127.0.0.1:8000${event.image}`}
+              alt={event.title}
+              className="w-full h-[650px] md:h-[750px] object-cover"
             />
-            </div>
 
-            {/* Dark Overlay */}
-            <div className="absolute inset-0 bg-black/50" />
+            <div className="absolute inset-0 bg-black/50 flex flex-col justify-center items-center text-white text-center px-6">
 
-            {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-4">
-              
               <p className="uppercase tracking-widest text-sm mb-2 opacity-80">
                 Discover Uppsala
               </p>
 
-              <span className="mb-4 bg-white text-black px-4 py-1 rounded-full text-sm font-semibold">
-                Featured Event
-              </span>
-
-              <h2 className="text-4xl md:text-6xl font-bold mb-4">
+              <h1 className="text-5xl md:text-7xl font-bold mb-6">
                 {event.title}
-              </h2>
+              </h1>
 
-              <p className="mb-6 text-lg">
-                {event.location} • {event.date}
+              <p className="mb-6">
+                {event.location}
               </p>
 
-              <Link
-                to={`/events/${event.id}`}
-                className="bg-white text-black px-8 py-3 rounded-full font-semibold hover:scale-105 transition"
-              >
-                View Event
-              </Link>
             </div>
-          </div>
+
+          </Link>
+
         ))}
+
       </div>
 
-      {/* Arrows */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-6 top-1/2 -translate-y-1/2 text-white text-4xl z-20"
-      >
-        ‹
-      </button>
 
-      <button
-        onClick={nextSlide}
-        className="absolute right-6 top-1/2 -translate-y-1/2 text-white text-4xl z-20"
-      >
-        ›
-      </button>
 
       {/* Dots */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3">
+
         {events.map((_, index) => (
-          <div
+
+          <button
             key={index}
             onClick={() => setCurrent(index)}
-            className={`w-3 h-3 rounded-full cursor-pointer ${
-              index === current
-                ? "bg-white"
-                : "bg-white/40"
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              current === index
+                ? "bg-white scale-125"
+                : "bg-white/40 hover:bg-white"
             }`}
           />
+
         ))}
+
       </div>
+
     </section>
   );
 }

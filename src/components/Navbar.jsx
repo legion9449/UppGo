@@ -2,23 +2,10 @@ import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 
 function Navbar() {
-  const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const location = useLocation();
   const isAdmin = localStorage.getItem("isAdmin") === "true";
-
-  // 🔥 Detect if we are inside admin routes
-  const isAdminPage = location.pathname.startsWith("/admin");
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("isAdmin");
@@ -30,13 +17,7 @@ function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${
-        isAdminPage
-          ? "bg-black py-4 shadow-lg" // ✅ Always black in admin
-          : scrolled
-          ? "bg-black/90 backdrop-blur-xl shadow-lg py-4"
-          : "bg-transparent py-6"
-      }`}
+      className="fixed top-0 left-0 w-full z-50 bg-black/90 backdrop-blur-xl shadow-lg py-4 transition-all duration-300"
     >
       <div className="max-w-7xl mx-auto flex justify-between items-center px-6">
 

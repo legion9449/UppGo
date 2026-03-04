@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api";
 
-function EditEventPage() {
+function AddEventPage() {
 
-  const { id } = useParams();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -18,38 +17,6 @@ function EditEventPage() {
     image: null
   });
 
-  const [currentImage, setCurrentImage] = useState("");
-
-  // Load event
-  useEffect(() => {
-
-    api.get(`/events/${id}`)
-      .then((res) => {
-
-        const event = res.data;
-
-        setForm({
-          title: event.title || "",
-          date: event.date || "",
-          location: event.location || "",
-          category: event.category || "",
-          eventType: event.eventType || "Non-Nations",
-          description: event.description || "",
-          featured: event.featured || false,
-          image: null
-        });
-
-        setCurrentImage(event.image);
-
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-
-  }, [id]);
-
-
-
   const handleChange = (e) => {
 
     const { name, value, type, checked } = e.target;
@@ -61,8 +28,6 @@ function EditEventPage() {
 
   };
 
-
-
   const handleImageChange = (e) => {
 
     setForm({
@@ -71,8 +36,6 @@ function EditEventPage() {
     });
 
   };
-
-
 
   const handleSubmit = async (e) => {
 
@@ -94,41 +57,39 @@ function EditEventPage() {
         formData.append("image", form.image);
       }
 
-      await api.post(`/events/${id}?_method=PUT`, formData, {
+      await api.post("/events", formData, {
         headers: {
           "Content-Type": "multipart/form-data"
         }
       });
 
-      alert("Event updated");
+      alert("Event created successfully");
 
       navigate("/admin/events");
 
     } catch (error) {
 
       console.error(error);
-      alert("Update failed");
+      alert("Error creating event");
 
     }
 
   };
 
-
-
   return (
-    <div className="min-h-screen p-10">
+    <div className="p-10 max-w-xl">
 
-      <h2 className="text-3xl font-bold mb-8">
-        Edit Event
+      <h2 className="text-3xl font-bold mb-6">
+        Add Event
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-xl">
+      <form onSubmit={handleSubmit} className="space-y-4">
 
         <input
           name="title"
           value={form.title}
           onChange={handleChange}
-          placeholder="Title"
+          placeholder="Event title"
           className="w-full border p-3"
           required
         />
@@ -177,26 +138,13 @@ function EditEventPage() {
           className="w-full border p-3"
         />
 
-        {/* Current Image */}
-        {currentImage && (
-          <div>
-            <p className="mb-2">Current Image</p>
-            <img
-              src={`http://127.0.0.1:8000${currentImage}`}
-              alt="Event"
-              className="w-full h-60 object-cover rounded mb-4"
-            />
-          </div>
-        )}
-
-        {/* Upload New Image */}
+        {/* Image Upload */}
         <input
           type="file"
           onChange={handleImageChange}
           className="w-full border p-3"
         />
 
-        {/* Featured */}
         <label className="flex items-center gap-2">
           <input
             type="checkbox"
@@ -211,7 +159,7 @@ function EditEventPage() {
           type="submit"
           className="bg-black text-white px-6 py-3 rounded"
         >
-          Update Event
+          Create Event
         </button>
 
       </form>
@@ -220,4 +168,4 @@ function EditEventPage() {
   );
 }
 
-export default EditEventPage;
+export default AddEventPage;

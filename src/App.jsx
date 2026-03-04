@@ -4,17 +4,19 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+// Public Pages
 import Home from "./pages/Home";
 import EventsPage from "./pages/EventsPage";
 import EventDetail from "./pages/EventDetail";
 import LoginPage from "./pages/LoginPage";
-import EditEventPage from "./pages/EditEventPage";
 import NotFound from "./pages/NotFound";
 
-// Admin Layout System
+// Admin Pages
 import AdminLayout from "./pages/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminEvents from "./pages/AdminEvents";
+import AddEventPage from "./pages/AddEventPage";
+import EditEventPage from "./pages/EditEventPage";
 
 function App() {
   return (
@@ -25,13 +27,20 @@ function App() {
 
       <Routes>
 
-        {/* ================= PUBLIC ROUTES ================= */}
+        {/* ---------------- PUBLIC ROUTES ---------------- */}
+
         <Route path="/" element={<Home />} />
+
         <Route path="/events" element={<EventsPage />} />
+
         <Route path="/events/:id" element={<EventDetail />} />
+
         <Route path="/login" element={<LoginPage />} />
 
-        {/* ================= ADMIN ROUTES ================= */}
+
+
+        {/* ---------------- ADMIN ROUTES ---------------- */}
+
         <Route
           path="/admin"
           element={
@@ -40,19 +49,20 @@ function App() {
             </ProtectedRoute>
           }
         >
+
           {/* Dashboard */}
           <Route index element={<AdminDashboard />} />
 
           {/* Manage Events */}
           <Route path="events" element={<AdminEvents />} />
 
-          {/* Edit Event */}
-          <Route
-            path="edit/:id"
-            element={<EditEventPage />}
-          />
+          {/* Add Event */}
+          <Route path="add" element={<AddEventPage />} />
 
-          {/* Activity (placeholder) */}
+          {/* Edit Event */}
+          <Route path="edit/:id" element={<EditEventPage />} />
+
+          {/* Activity placeholder */}
           <Route
             path="activity"
             element={
@@ -61,9 +71,13 @@ function App() {
               </div>
             }
           />
+
         </Route>
 
-        {/* ================= 404 ================= */}
+
+
+        {/* ---------------- 404 ---------------- */}
+
         <Route path="*" element={<NotFound />} />
 
       </Routes>
