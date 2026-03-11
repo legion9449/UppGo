@@ -136,7 +136,7 @@ uppgo
 
 Run migrations:
 
-php artisan migrate
+php artisan migrate:fresh
 
 🖼 Enable Image Upload Storage
 

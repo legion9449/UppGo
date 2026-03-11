@@ -10,13 +10,17 @@ function Events() {
   const [eventTypeFilter, setEventTypeFilter] = useState("All");
 
   useEffect(() => {
+
     api.get("/events")
       .then((res) => {
-        setEvents(res.data);
+
+        const eventsData = res.data.data || res.data;
+
+        setEvents(eventsData);
+
       })
-      .catch((err) => {
-        console.error(err);
-      });
+      .catch((err) => console.error(err));
+
   }, []);
 
   const categories = [
@@ -53,13 +57,23 @@ function Events() {
   });
 
   return (
-    <section className="pt-28 pb-20 px-6">
+    <section className="py-20">
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-7xl mx-auto px-6">
 
-        <h2 className="text-4xl font-bold mb-8">
-          Events in Uppsala
-        </h2>
+        {/* Section Header */}
+        <div className="mb-10">
+
+          <h2 className="text-4xl font-bold mb-3">
+            Upcoming Events
+          </h2>
+
+          <p className="text-gray-600 max-w-2xl">
+            Discover upcoming events happening in Uppsala — from music festivals
+            and cultural celebrations to food markets and outdoor experiences.
+          </p>
+
+        </div>
 
         {/* SEARCH */}
         <input

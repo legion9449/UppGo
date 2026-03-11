@@ -2,55 +2,34 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
 
-function AdminDashboard() {
+function OrganizerDashboard() {
 
   const navigate = useNavigate();
 
   const [events, setEvents] = useState([]);
-  const [filteredEvents, setFilteredEvents] = useState([]);
-
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
 
   const [tab, setTab] = useState("pending");
   const [selected, setSelected] = useState(null);
 
-  const [search, setSearch] = useState("");
+  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
+
+    if (!user) return;
+
     loadEvents();
+
   }, [tab, page]);
-
-  useEffect(() => {
-
-    const filtered = events.filter((event) => {
-
-      const text = search.toLowerCase();
-
-      return (
-        event.title?.toLowerCase().includes(text) ||
-        event.location?.toLowerCase().includes(text) ||
-        event.category?.toLowerCase().includes(text)
-      );
-
-    });
-
-    setFilteredEvents(filtered);
-
-  }, [search, events]);
-
 
   const loadEvents = async () => {
 
-    let url = "";
-
-    if (tab === "pending") url = `/admin/pending-events?page=${page}`;
-    if (tab === "approved") url = `/admin/approved-events?page=${page}`;
-    if (tab === "rejected") url = `/admin/rejected-events?page=${page}`;
-
     try {
 
-      const res = await api.get(url);
+      const res = await api.get(
+        `/organizer/events/${user.id}?status=${tab}&page=${page}`
+      );
 
       setEvents(res.data.data || []);
       setLastPage(res.data.last_page || 1);
@@ -64,43 +43,27 @@ function AdminDashboard() {
 
   };
 
-
-  const toggleFeatured = async (id) => {
-
-    try {
-
-      await api.put(`/events/${id}/feature`);
-
-      loadEvents();
-      setSelected(null);
-
-    } catch (err) {
-
-      console.log(err);
-
-    }
-
-  };
-
-
   return (
 
     <div className="p-10">
 
       <h1 className="text-3xl font-bold mb-8">
-        Admin Event Moderation
+        Organizer Event Management
       </h1>
 
 
-      {/* SEARCH BAR */}
+      {/* ADD EVENT BUTTON */}
 
-      <input
-        type="text"
-        placeholder="Search events..."
-        value={search}
-        onChange={(e)=>setSearch(e.target.value)}
-        className="w-full border p-3 rounded mb-6"
-      />
+      <div className="mb-6">
+
+        <button
+          onClick={()=>navigate("/organizer/add")}
+          className="bg-black text-white px-5 py-3 rounded"
+        >
+          + Add Event
+        </button>
+
+      </div>
 
 
       {/* TABS */}
@@ -141,7 +104,7 @@ function AdminDashboard() {
 
       <div className="grid md:grid-cols-3 gap-6">
 
-        {filteredEvents.map((event)=>(
+        {events.map((event)=>(
           <div
             key={event.id}
             onClick={()=>setSelected(event)}
@@ -149,12 +112,10 @@ function AdminDashboard() {
           >
 
             {event.image && (
-
               <img
                 src={`http://127.0.0.1:8000${event.image}`}
                 className="w-full h-40 object-cover"
               />
-
             )}
 
             <div className="p-4">
@@ -165,10 +126,6 @@ function AdminDashboard() {
 
               <p className="text-sm text-gray-500">
                 {event.date}
-              </p>
-
-              <p className="text-sm text-gray-600">
-                {event.location}
               </p>
 
             </div>
@@ -191,12 +148,12 @@ function AdminDashboard() {
           ◀ Previous
         </button>
 
-        {Array.from({length: lastPage}, (_,i)=>i+1).map((p)=>(
+        {Array.from({length:lastPage},(_,i)=>i+1).map((p)=>(
           <button
             key={p}
             onClick={()=>setPage(p)}
             className={`px-4 py-2 border rounded ${
-              p === page ? "bg-black text-white":""
+              p===page ? "bg-black text-white":""
             }`}
           >
             {p}
@@ -215,7 +172,7 @@ function AdminDashboard() {
 
 
 
-      {/* EVENT MODAL */}
+      {/* EVENT DETAILS MODAL */}
 
       {selected && (
 
@@ -260,37 +217,21 @@ function AdminDashboard() {
             )}
 
 
-            {/* ACTION BUTTONS */}
+            {/* EDIT ONLY FOR PENDING */}
 
-            <div className="flex justify-between mt-8">
+            {selected.status === "pending" && (
 
-              {selected.status === "approved" && (
+              <button
+                onClick={()=>navigate(`/organizer/edit/${selected.id}`)}
+                className="bg-black text-white px-4 py-2 rounded mt-6"
+              >
+                Edit Event
+              </button>
 
-                <div className="flex gap-3">
+            )}
 
-                  <button
-                    onClick={()=>navigate(`/admin/edit/${selected.id}`)}
-                    className="bg-black text-white px-4 py-2 rounded"
-                  >
-                    Edit Event
-                  </button>
 
-                  <button
-                    onClick={()=>toggleFeatured(selected.id)}
-                    className={`px-4 py-2 rounded ${
-                      selected.featured
-                      ? "bg-yellow-500 text-white"
-                      : "border"
-                    }`}
-                  >
-                    {selected.featured
-                      ? "Remove Featured"
-                      : "Make Featured"}
-                  </button>
-
-                </div>
-
-              )}
+            <div className="flex justify-end mt-6">
 
               <button
                 onClick={()=>setSelected(null)}
@@ -313,4 +254,4 @@ function AdminDashboard() {
 
 }
 
-export default AdminDashboard;
+export default OrganizerDashboard;

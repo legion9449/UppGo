@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
 
-function AddEventPage() {
+function OrganizerAddEventPage() {
 
   const navigate = useNavigate();
 
@@ -61,14 +61,13 @@ function AddEventPage() {
         }
       });
 
-      alert("Event submitted for admin approval");
+      alert("Event submitted for approval");
 
       navigate("/organizer-dashboard");
 
     } catch (err) {
 
       console.log(err);
-
       alert("Failed to submit event");
 
     }
@@ -76,20 +75,20 @@ function AddEventPage() {
   };
 
   return (
-    <div className="pt-32 px-6 pb-20 bg-gray-50 min-h-screen">
 
-      <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow">
+    <div className="min-h-screen pt-32 px-6 bg-gray-100">
 
-        <h1 className="text-3xl font-bold mb-6">
-          Add Event
-        </h1>
+      <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-2xl p-8">
+
+        <h2 className="text-3xl font-bold mb-8 text-center">
+          Submit New Event
+        </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
 
           <input
             name="title"
             placeholder="Event Title"
-            value={form.title}
             onChange={handleChange}
             className="w-full border p-3 rounded"
             required
@@ -98,7 +97,6 @@ function AddEventPage() {
           <input
             type="date"
             name="date"
-            value={form.date}
             onChange={handleChange}
             className="w-full border p-3 rounded"
             required
@@ -107,7 +105,6 @@ function AddEventPage() {
           <input
             name="location"
             placeholder="Location"
-            value={form.location}
             onChange={handleChange}
             className="w-full border p-3 rounded"
             required
@@ -116,48 +113,35 @@ function AddEventPage() {
           <input
             name="category"
             placeholder="Category"
-            value={form.category}
             onChange={handleChange}
             className="w-full border p-3 rounded"
           />
 
           <select
             name="eventType"
-            value={form.eventType}
             onChange={handleChange}
             className="w-full border p-3 rounded"
           >
-            <option value="Nations">Nations</option>
-            <option value="Non-Nations">Non-Nations</option>
+            <option>Nations</option>
+            <option>Non-Nations</option>
           </select>
-
-          {/* IMAGE UPLOAD */}
-          <div>
-
-            <label className="block mb-2 font-semibold">
-              Upload Event Image
-            </label>
-
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="w-full border p-3 rounded"
-            />
-
-          </div>
 
           <textarea
             name="description"
             placeholder="Description"
-            value={form.description}
             onChange={handleChange}
+            className="w-full border p-3 rounded"
+          />
+
+          <input
+            type="file"
+            onChange={handleImageChange}
             className="w-full border p-3 rounded"
           />
 
           <button
             type="submit"
-            className="bg-black text-white px-6 py-3 rounded-full"
+            className="bg-black text-white px-6 py-3 rounded w-full"
           >
             Submit Event
           </button>
@@ -167,7 +151,9 @@ function AddEventPage() {
       </div>
 
     </div>
+
   );
+
 }
 
-export default AddEventPage;
+export default OrganizerAddEventPage;

@@ -13,9 +13,19 @@ function FeaturedCarousel() {
   const minSwipeDistance = 50;
 
   useEffect(() => {
-    api.get("/events?featured=1").then((res) => {
-      setEvents(res.data);
-    });
+
+    api.get("/events?featured=1")
+      .then((res) => {
+
+        const eventsData = res.data.data || res.data;
+
+        setEvents(eventsData);
+
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+
   }, []);
 
   useEffect(() => {
@@ -28,7 +38,7 @@ function FeaturedCarousel() {
 
     return () => clearInterval(interval);
 
-  }, [events, current]);
+  }, [events]);
 
 
 

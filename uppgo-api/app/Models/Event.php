@@ -16,6 +16,8 @@ class Event extends Model
         'image',
         'featured',
         'latitude',
-        'longitude'
+        'longitude',
+        'status',
+        'user_id'
     ];
 }

@@ -18,10 +18,16 @@ function EditEventPage() {
     image: null
   });
 
+  useEffect(() => {
+  window.scrollTo(0,0);
+},[]);
+
   const [currentImage, setCurrentImage] = useState("");
 
-  // Load event
   useEffect(() => {
+
+    // 🔹 force page to top
+    window.scrollTo(0, 0);
 
     api.get(`/events/${id}`)
       .then((res) => {
@@ -43,12 +49,10 @@ function EditEventPage() {
 
       })
       .catch((err) => {
-        console.error(err);
+        console.log(err);
       });
 
   }, [id]);
-
-
 
   const handleChange = (e) => {
 
@@ -61,8 +65,6 @@ function EditEventPage() {
 
   };
 
-
-
   const handleImageChange = (e) => {
 
     setForm({
@@ -71,8 +73,6 @@ function EditEventPage() {
     });
 
   };
-
-
 
   const handleSubmit = async (e) => {
 
@@ -100,124 +100,148 @@ function EditEventPage() {
         }
       });
 
-      alert("Event updated");
+      alert("Event updated successfully");
 
-      navigate("/admin/events");
+      navigate(-1);
 
     } catch (error) {
 
-      console.error(error);
+      console.log(error);
       alert("Update failed");
 
     }
 
   };
 
-
-
   return (
-    <div className="min-h-screen p-10">
 
-      <h2 className="text-3xl font-bold mb-8">
-        Edit Event
-      </h2>
+    <div className="min-h-screen pt-32 px-6 bg-gray-100">
 
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-xl">
+      <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-2xl p-8">
 
-        <input
-          name="title"
-          value={form.title}
-          onChange={handleChange}
-          placeholder="Title"
-          className="w-full border p-3"
-          required
-        />
+        <h2 className="text-3xl font-bold mb-8">
+         Admin Edit Event
+        </h2>
 
-        <input
-          type="date"
-          name="date"
-          value={form.date}
-          onChange={handleChange}
-          className="w-full border p-3"
-          required
-        />
+        <p className="text-gray-500 mb-6">
+         Changes will update the live approved event.
+       </p>
 
-        <input
-          name="location"
-          value={form.location}
-          onChange={handleChange}
-          placeholder="Location"
-          className="w-full border p-3"
-          required
-        />
+        <form onSubmit={handleSubmit} className="space-y-4">
 
-        <input
-          name="category"
-          value={form.category}
-          onChange={handleChange}
-          placeholder="Category"
-          className="w-full border p-3"
-        />
-
-        <select
-          name="eventType"
-          value={form.eventType}
-          onChange={handleChange}
-          className="w-full border p-3"
-        >
-          <option>Nations</option>
-          <option>Non-Nations</option>
-        </select>
-
-        <textarea
-          name="description"
-          value={form.description}
-          onChange={handleChange}
-          placeholder="Description"
-          className="w-full border p-3"
-        />
-
-        {/* Current Image */}
-        {currentImage && (
-          <div>
-            <p className="mb-2">Current Image</p>
-            <img
-              src={`http://127.0.0.1:8000${currentImage}`}
-              alt="Event"
-              className="w-full h-60 object-cover rounded mb-4"
-            />
-          </div>
-        )}
-
-        {/* Upload New Image */}
-        <input
-          type="file"
-          onChange={handleImageChange}
-          className="w-full border p-3"
-        />
-
-        {/* Featured */}
-        <label className="flex items-center gap-2">
           <input
-            type="checkbox"
-            name="featured"
-            checked={form.featured}
+            name="title"
+            value={form.title}
             onChange={handleChange}
+            placeholder="Title"
+            className="w-full border p-3 rounded-lg"
+            required
           />
-          Featured Event
-        </label>
 
-        <button
-          type="submit"
-          className="bg-black text-white px-6 py-3 rounded"
-        >
-          Update Event
-        </button>
+          <input
+            type="date"
+            name="date"
+            value={form.date}
+            onChange={handleChange}
+            className="w-full border p-3 rounded-lg"
+            required
+          />
 
-      </form>
+          <input
+            name="location"
+            value={form.location}
+            onChange={handleChange}
+            placeholder="Location"
+            className="w-full border p-3 rounded-lg"
+            required
+          />
+
+          <input
+            name="category"
+            value={form.category}
+            onChange={handleChange}
+            placeholder="Category"
+            className="w-full border p-3 rounded-lg"
+          />
+
+          <select
+            name="eventType"
+            value={form.eventType}
+            onChange={handleChange}
+            className="w-full border p-3 rounded-lg"
+          >
+            <option>Nations</option>
+            <option>Non-Nations</option>
+          </select>
+
+          <textarea
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+            placeholder="Description"
+            className="w-full border p-3 rounded-lg"
+            rows="4"
+          />
+
+          {currentImage && (
+
+            <div>
+
+              <p className="font-semibold mb-2">
+                Current Image
+              </p>
+
+              <img
+                src={`http://127.0.0.1:8000${currentImage}`}
+                alt="Event"
+                className="w-full h-60 object-cover rounded-lg"
+              />
+
+            </div>
+
+          )}
+
+          <div>
+
+            <p className="font-semibold mb-2">
+              Upload New Image
+            </p>
+
+            <input
+              type="file"
+              onChange={handleImageChange}
+              className="w-full border p-3 rounded-lg"
+            />
+
+          </div>
+
+          <div className="flex justify-between pt-4">
+
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="px-6 py-2 border rounded-lg"
+            >
+              Back
+            </button>
+
+            <button
+              type="submit"
+              className="bg-black text-white px-6 py-2 rounded-lg"
+            >
+              Update Event
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
 
     </div>
+
   );
+
 }
 
 export default EditEventPage;

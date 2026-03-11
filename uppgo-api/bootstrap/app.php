@@ -9,11 +9,15 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
     )
-    ->withMiddleware(function (Middleware $middleware) {
-    $middleware->api(prepend: [
-        \Illuminate\Http\Middleware\HandleCors::class,
+    ->withMiddleware(function ($middleware) {
+
+    $middleware->alias([
+        'admin' => \App\Http\Middleware\AdminMiddleware::class,
     ]);
+
 })
+    
+
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
