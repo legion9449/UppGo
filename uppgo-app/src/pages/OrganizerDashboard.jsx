@@ -45,34 +45,28 @@ function OrganizerDashboard() {
 
   return (
 
-    <div className="p-10">
+    <div className="pt-32 px-8 min-h-screen">
 
       <h1 className="text-3xl font-bold mb-8">
         Organizer Event Management
       </h1>
 
-
-      {/* ADD EVENT BUTTON */}
-
-      <div className="mb-6">
+      <div className="mb-8">
 
         <button
           onClick={()=>navigate("/organizer/add")}
-          className="bg-black text-white px-5 py-3 rounded"
+          className="bg-black text-white px-6 py-3 rounded-lg hover:opacity-80"
         >
           + Add Event
         </button>
 
       </div>
 
-
-      {/* TABS */}
-
-      <div className="flex gap-4 mb-8">
+      <div className="flex gap-4 mb-10">
 
         <button
           onClick={()=>{setTab("pending"); setPage(1);}}
-          className={`px-4 py-2 rounded ${
+          className={`px-5 py-2 rounded ${
             tab==="pending" ? "bg-black text-white":"border"
           }`}
         >
@@ -81,7 +75,7 @@ function OrganizerDashboard() {
 
         <button
           onClick={()=>{setTab("approved"); setPage(1);}}
-          className={`px-4 py-2 rounded ${
+          className={`px-5 py-2 rounded ${
             tab==="approved" ? "bg-black text-white":"border"
           }`}
         >
@@ -90,7 +84,7 @@ function OrganizerDashboard() {
 
         <button
           onClick={()=>{setTab("rejected"); setPage(1);}}
-          className={`px-4 py-2 rounded ${
+          className={`px-5 py-2 rounded ${
             tab==="rejected" ? "bg-black text-white":"border"
           }`}
         >
@@ -99,28 +93,28 @@ function OrganizerDashboard() {
 
       </div>
 
-
-      {/* EVENTS GRID */}
-
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 
         {events.map((event)=>(
+
           <div
             key={event.id}
             onClick={()=>setSelected(event)}
-            className="cursor-pointer border rounded-xl overflow-hidden shadow hover:shadow-lg"
+            className="cursor-pointer border rounded-xl overflow-hidden shadow hover:shadow-lg transition"
           >
 
             {event.image && (
+
               <img
                 src={`http://127.0.0.1:8000${event.image}`}
-                className="w-full h-40 object-cover"
+                className="w-full h-36 object-cover"
               />
+
             )}
 
             <div className="p-4">
 
-              <h3 className="font-bold">
+              <h3 className="font-bold text-lg">
                 {event.title}
               </h3>
 
@@ -131,14 +125,12 @@ function OrganizerDashboard() {
             </div>
 
           </div>
+
         ))}
 
       </div>
 
-
-      {/* PAGINATION */}
-
-      <div className="flex justify-center gap-3 mt-10">
+      <div className="flex justify-center gap-4 mt-12">
 
         <button
           disabled={page === 1}
@@ -170,10 +162,6 @@ function OrganizerDashboard() {
 
       </div>
 
-
-
-      {/* EVENT DETAILS MODAL */}
-
       {selected && (
 
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
@@ -185,10 +173,12 @@ function OrganizerDashboard() {
             </h2>
 
             {selected.image && (
+
               <img
                 src={`http://127.0.0.1:8000${selected.image}`}
                 className="w-full h-60 object-cover mb-4 rounded"
               />
+
             )}
 
             <p><b>Date:</b> {selected.date}</p>
@@ -198,9 +188,6 @@ function OrganizerDashboard() {
             <p className="mt-4">
               {selected.description}
             </p>
-
-
-            {/* REJECTION REASON */}
 
             {selected.status === "rejected" && (
 
@@ -216,9 +203,6 @@ function OrganizerDashboard() {
 
             )}
 
-
-            {/* EDIT ONLY FOR PENDING */}
-
             {selected.status === "pending" && (
 
               <button
@@ -229,7 +213,6 @@ function OrganizerDashboard() {
               </button>
 
             )}
-
 
             <div className="flex justify-end mt-6">
 

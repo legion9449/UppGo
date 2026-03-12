@@ -12,7 +12,10 @@ import SignupPage from "./pages/SignupPage";
 import ForgotPassword from "./pages/ForgotPassword";
 
 import UserDashboard from "./pages/UserDashboard";
+
 import OrganizerDashboard from "./pages/OrganizerDashboard";
+import OrganizerAddEventPage from "./pages/OrganizerAddEventPage";
+import OrganizerEditEventPage from "./pages/OrganizerEditEventPage";
 
 import AdminLayout from "./pages/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -23,7 +26,9 @@ import EditEventPage from "./pages/EditEventPage";
 import NotFound from "./pages/NotFound";
 
 function App() {
+
   return (
+
     <BrowserRouter>
 
       <Navbar />
@@ -31,35 +36,71 @@ function App() {
       <Routes>
 
         {/* PUBLIC */}
+
         <Route path="/" element={<Home />} />
         <Route path="/events" element={<EventsPage />} />
         <Route path="/events/:id" element={<EventDetail />} />
 
+
         {/* AUTH */}
+
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
+
         {/* USER */}
-        <Route path="/user-dashboard" element={<UserDashboard />} />
+
+        <Route
+          path="/user-dashboard"
+          element={<UserDashboard />}
+        />
+
 
         {/* ORGANIZER */}
-        <Route path="/organizer" element={<OrganizerDashboard />} />
+
+        <Route
+          path="/organizer"
+          element={<OrganizerDashboard />}
+        />
+
+        <Route
+          path="/organizer/add"
+          element={<OrganizerAddEventPage />}
+        />
+
+        <Route
+          path="/organizer/edit/:id"
+          element={<OrganizerEditEventPage />}
+        />
+
 
         {/* ADMIN */}
+
         <Route path="/admin" element={<AdminLayout />}>
 
           <Route index element={<AdminDashboard />} />
 
-          <Route path="events" element={<AdminEvents />} />
+          <Route
+            path="events"
+            element={<AdminEvents />}
+          />
 
-          <Route path="add-event" element={<AddEventPage />} />
+          <Route
+            path="add-event"
+            element={<AddEventPage />}
+          />
 
-          <Route path="edit/:id" element={<EditEventPage />} />
+          <Route
+            path="edit/:id"
+            element={<EditEventPage />}
+          />
 
         </Route>
 
+
         {/* 404 */}
+
         <Route path="*" element={<NotFound />} />
 
       </Routes>
@@ -67,7 +108,9 @@ function App() {
       <Footer />
 
     </BrowserRouter>
+
   );
+
 }
 
 export default App;

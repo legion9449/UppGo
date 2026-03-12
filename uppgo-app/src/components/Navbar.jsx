@@ -1,12 +1,12 @@
+import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
 
 function Navbar() {
 
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
-  const [dropdown, setDropdown] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const dropdownRef = useRef();
 
@@ -20,79 +20,76 @@ function Navbar() {
 
   }, []);
 
+  // Close dropdown when clicking outside
   useEffect(() => {
 
     const handleClickOutside = (event) => {
 
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdown(false);
+        setOpen(false);
       }
 
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("click", handleClickOutside);
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("click", handleClickOutside);
     };
 
   }, []);
 
-  const handleLogout = () => {
+  const logout = () => {
 
-    localStorage.removeItem("user");
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
 
-    navigate("/login");
+    setUser(null);
+
+    navigate("/");
 
     window.location.reload();
 
   };
 
-  const getDashboardLink = () => {
+  const goDashboard = () => {
 
-    if (!user) return "/";
+    if (!user) return;
 
-    if (user.role === "admin") return "/admin";
+    if (user.role === "admin") {
+      navigate("/admin");
+    }
+    else if (user.role === "organizer") {
+      navigate("/organizer");
+    }
+    else {
+      navigate("/user-dashboard");
+    }
 
-    if (user.role === "organizer") return "/organizer-dashboard";
-
-    return "/user-dashboard";
-
-  };
-
-  const getDashboardLabel = () => {
-
-    if (!user) return "";
-
-    if (user.role === "admin") return "Admin Panel";
-
-    if (user.role === "organizer") return "My Events";
-
-    return "My Dashboard";
+    setOpen(false);
 
   };
 
   return (
 
-    <nav className="fixed top-0 left-0 w-full bg-black text-white z-50">
+    <nav className="fixed top-0 w-full bg-black text-white z-50">
 
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-6 py-4">
+      <div className="max-w-7xl mx-auto flex justify-between items-center px-8 py-4">
 
-        <NavLink to="/" className="text-2xl font-bold">
+        <Link to="/" className="text-2xl font-bold">
           UppGo
-        </NavLink>
+        </Link>
 
         <div className="flex items-center gap-6">
 
-          <NavLink to="/events">
+          <Link to="/events">
             Events
-          </NavLink>
+          </Link>
 
           {!user && (
-            <NavLink to="/login">
+            <Link to="/login">
               Login
-            </NavLink>
+            </Link>
           )}
 
           {user && (
@@ -100,32 +97,32 @@ function Navbar() {
             <div className="relative" ref={dropdownRef}>
 
               <button
-                onClick={() => setDropdown(!dropdown)}
-                className="font-semibold"
+                onClick={() => setOpen(!open)}
+                className="flex items-center gap-2 hover:opacity-80"
               >
-                {user.name}
+                {user.name} ▼
               </button>
 
-              {dropdown && (
+              {open && (
 
-                <div className="absolute right-0 mt-2 w-44 bg-white text-black rounded shadow-lg">
+                <div className="absolute right-0 mt-3 w-48 bg-white text-black rounded-lg shadow-lg overflow-hidden">
 
                   <button
-                    onClick={() => {
-
-                      navigate(getDashboardLink());
-
-                      setDropdown(false);
-
-                    }}
-                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                    onClick={goDashboard}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-100"
                   >
-                    {getDashboardLabel()}
+
+                    {user.role === "admin" && "Admin Dashboard"}
+
+                    {user.role === "organizer" && "Organizer Dashboard"}
+
+                    {user.role === "user" && "My Profile"}
+
                   </button>
 
                   <button
-                    onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                    onClick={logout}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-100"
                   >
                     Logout
                   </button>

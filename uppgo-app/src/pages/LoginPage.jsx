@@ -17,32 +17,34 @@ function LoginPage() {
     try {
 
       const res = await api.post("/login", {
-        username,
-        password
+        username: username,
+        password: password
       });
 
+      const user = res.data.user;
+
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("user", JSON.stringify(user));
 
-      const role = res.data.user.role;
+      // ROLE REDIRECT
+      if (user.role === "admin") {
 
-      // redirect by role
-      if (role === "admin") {
         navigate("/admin");
-      }
 
-      else if (role === "organizer") {
-        navigate("/organizer-dashboard");
-      }
+      } else if (user.role === "organizer") {
 
-      else {
+        navigate("/organizer");
+
+      } else {
+
         navigate("/user-dashboard");
+
       }
 
-      // force navbar refresh
+      // Force UI refresh (important for navbar + routes)
       window.location.reload();
 
-    } catch {
+    } catch (err) {
 
       setError("Invalid username or password");
 
