@@ -21,13 +21,12 @@ COPY . .
 # Install Laravel dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Fix permissions for Laravel
+# Fix permissions
 RUN chmod -R 775 storage bootstrap/cache
 
-# Generate optimized files
-RUN php artisan config:cache || true
-RUN php artisan route:cache || true
-RUN php artisan view:cache || true
+# Clear Laravel caches so Cloud Run env variables work
+RUN php artisan config:clear || true
+RUN php artisan cache:clear || true
 
-# Cloud Run uses PORT env variable
-CMD php artisan serve --host=0.0.0.0 --port=${PORT}
+# Serve Laravel from public directory
+CMD php -S 0.0.0.0:${PORT} -t public
