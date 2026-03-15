@@ -60,11 +60,12 @@ return [
             'report' => false,
         ],
         'gcs' => [
-            'driver' => 'gcs',
-            'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
-            'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET'),
-            'visibility' => 'public',
+    'driver' => 'gcs',
+    'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
+    'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET'),
+    'visibility' => 'public',
 ],
+
 
     ],
 
