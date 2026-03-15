@@ -24,9 +24,12 @@ RUN composer install --no-dev --optimize-autoloader
 # Fix permissions
 RUN chmod -R 775 storage bootstrap/cache
 
-# Clear Laravel caches so Cloud Run env variables work
+# Create Laravel storage link (VERY IMPORTANT for images)
+RUN php artisan storage:link || true
+
+# Clear caches so Cloud Run env variables work
 RUN php artisan config:clear || true
 RUN php artisan cache:clear || true
 
-# Serve Laravel from public directory
+# Run Laravel
 CMD php -S 0.0.0.0:${PORT} -t public
