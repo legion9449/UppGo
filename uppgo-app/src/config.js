@@ -1,0 +1,1 @@
+export const API_BASE = "https://uppgo-405716712672.europe-north1.run.app";

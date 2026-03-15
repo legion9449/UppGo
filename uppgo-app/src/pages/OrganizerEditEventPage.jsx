@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api";
+import { API_URL } from "../config";
 
 function OrganizerEditEventPage() {
 
@@ -40,7 +41,8 @@ function OrganizerEditEventPage() {
 
         setCurrentImage(event.image);
 
-      });
+      })
+      .catch((err)=>console.log(err));
 
   }, [id]);
 
@@ -91,7 +93,7 @@ function OrganizerEditEventPage() {
 
       alert("Event updated");
 
-      navigate("/organizer-dashboard");
+      navigate("/organizer");
 
     }catch(err){
 
@@ -170,7 +172,7 @@ function OrganizerEditEventPage() {
               <p className="mb-2">Current Image</p>
 
               <img
-                src={`http://127.0.0.1:8000${currentImage}`}
+                src={`${API_URL}${currentImage}`}
                 className="w-full h-60 object-cover rounded"
               />
 

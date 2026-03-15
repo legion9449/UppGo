@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api";
+import { API_URL } from "../config";
 
 function EditEventPage() {
 
@@ -18,15 +19,10 @@ function EditEventPage() {
     image: null
   });
 
-  useEffect(() => {
-  window.scrollTo(0,0);
-},[]);
-
   const [currentImage, setCurrentImage] = useState("");
 
   useEffect(() => {
 
-    // 🔹 force page to top
     window.scrollTo(0, 0);
 
     api.get(`/events/${id}`)
@@ -120,12 +116,12 @@ function EditEventPage() {
       <div className="max-w-2xl mx-auto bg-white shadow-lg rounded-2xl p-8">
 
         <h2 className="text-3xl font-bold mb-8">
-         Admin Edit Event
+          Admin Edit Event
         </h2>
 
         <p className="text-gray-500 mb-6">
-         Changes will update the live approved event.
-       </p>
+          Changes will update the live approved event.
+        </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
 
@@ -192,7 +188,7 @@ function EditEventPage() {
               </p>
 
               <img
-                src={`http://127.0.0.1:8000${currentImage}`}
+                src={`${API_URL}${currentImage}`}
                 alt="Event"
                 className="w-full h-60 object-cover rounded-lg"
               />

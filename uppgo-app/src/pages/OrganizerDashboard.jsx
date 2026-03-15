@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
+import { API_URL } from "../config";
 
 function OrganizerDashboard() {
 
@@ -106,7 +107,7 @@ function OrganizerDashboard() {
             {event.image && (
 
               <img
-                src={`http://127.0.0.1:8000${event.image}`}
+                src={`${API_URL}${event.image}`}
                 className="w-full h-36 object-cover"
               />
 
@@ -175,7 +176,7 @@ function OrganizerDashboard() {
             {selected.image && (
 
               <img
-                src={`http://127.0.0.1:8000${selected.image}`}
+                src={`${API_URL}${selected.image}`}
                 className="w-full h-60 object-cover mb-4 rounded"
               />
 

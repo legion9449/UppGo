@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api";
+import { API_URL } from "../config";
 
 function Events() {
 
@@ -61,7 +62,7 @@ function Events() {
 
       <div className="max-w-7xl mx-auto px-6">
 
-        {/* Section Header */}
+        {/* Header */}
         <div className="mb-10">
 
           <h2 className="text-4xl font-bold mb-3">
@@ -133,7 +134,7 @@ function Events() {
 
               {event.image && (
                 <img
-                  src={`http://127.0.0.1:8000${event.image}`}
+                  src={`${API_URL}${event.image}`}
                   alt={event.title}
                   className="w-full h-60 object-cover group-hover:scale-105 transition"
                 />
@@ -165,6 +166,7 @@ function Events() {
 
     </section>
   );
+
 }
 
 export default Events;

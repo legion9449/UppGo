@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../api";
+import { API_BASE } from "../config";
 
 function AdminEvents() {
 
@@ -23,7 +24,6 @@ function AdminEvents() {
 
       const data = res.data;
 
-      // Ensure events is always an array
       if (Array.isArray(data)) {
         setEvents(data);
       } else if (data.data) {
@@ -112,8 +112,9 @@ function AdminEvents() {
 
             {event.image && (
               <img
-                src={`http://127.0.0.1:8000${event.image}`}
+                src={`${API_BASE}${event.image}`}
                 className="w-full h-40 object-cover"
+                alt={event.title}
               />
             )}
 
@@ -188,8 +189,9 @@ function AdminEvents() {
 
             {selectedEvent.image && (
               <img
-                src={`http://127.0.0.1:8000${selectedEvent.image}`}
+                src={`${API_BASE}${selectedEvent.image}`}
                 className="w-full h-60 object-cover mb-4 rounded"
+                alt={selectedEvent.title}
               />
             )}
 

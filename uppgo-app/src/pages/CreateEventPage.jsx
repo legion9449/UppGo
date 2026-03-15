@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../api";
 
 function CreateEventPage() {
+
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -19,14 +20,18 @@ function CreateEventPage() {
   });
 
   const handleChange = (e) => {
+
     const { name, value, type, checked } = e.target;
+
     setForm({
       ...form,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === "checkbox" ? checked : value
     });
+
   };
 
   const geocodeAddress = async (address) => {
+
     const response = await fetch(
       `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
     );
@@ -36,62 +41,115 @@ function CreateEventPage() {
     if (data.length > 0) {
       return {
         latitude: data[0].lat,
-        longitude: data[0].lon,
+        longitude: data[0].lon
       };
     }
 
     return null;
+
   };
 
   const handleSubmit = async (e) => {
+
     e.preventDefault();
 
     try {
-      // 🔥 Convert location to coordinates
+
       const coords = await geocodeAddress(form.location);
 
-      if (coords) {
-        form.latitude = coords.latitude;
-        form.longitude = coords.longitude;
-      } else {
+      if (!coords) {
         alert("Could not find location coordinates");
         return;
       }
 
-      await api.post("/events", form);
+      const payload = {
+        ...form,
+        latitude: coords.latitude,
+        longitude: coords.longitude
+      };
+
+      await api.post("/events", payload);
 
       navigate("/admin/events");
 
     } catch (error) {
+
       console.error(error);
+
     }
+
   };
 
   return (
+
     <div>
-      <h1 className="text-3xl font-bold mb-6">Create Event</h1>
+
+      <h1 className="text-3xl font-bold mb-6">
+        Create Event
+      </h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
 
-        <input name="title" placeholder="Title" onChange={handleChange} required className="w-full p-2 border rounded" />
+        <input
+          name="title"
+          placeholder="Title"
+          onChange={handleChange}
+          required
+          className="w-full p-2 border rounded"
+        />
 
-        <input name="date" type="date" onChange={handleChange} required className="w-full p-2 border rounded" />
+        <input
+          name="date"
+          type="date"
+          onChange={handleChange}
+          required
+          className="w-full p-2 border rounded"
+        />
 
-        <input name="location" placeholder="Location (e.g. Uppsala Castle)" onChange={handleChange} required className="w-full p-2 border rounded" />
+        <input
+          name="location"
+          placeholder="Location (e.g. Uppsala Castle)"
+          onChange={handleChange}
+          required
+          className="w-full p-2 border rounded"
+        />
 
-        <input name="category" placeholder="Category" onChange={handleChange} className="w-full p-2 border rounded" />
+        <input
+          name="category"
+          placeholder="Category"
+          onChange={handleChange}
+          className="w-full p-2 border rounded"
+        />
 
-        <input name="image" placeholder="Image URL" onChange={handleChange} className="w-full p-2 border rounded" />
+        <input
+          name="image"
+          placeholder="Image URL (https://...)"
+          onChange={handleChange}
+          className="w-full p-2 border rounded"
+        />
 
-        <select name="eventType" onChange={handleChange} className="w-full p-2 border rounded">
+        <select
+          name="eventType"
+          onChange={handleChange}
+          className="w-full p-2 border rounded"
+        >
           <option value="Nations">Nations</option>
           <option value="Non-Nations">Non-Nations</option>
         </select>
 
-        <textarea name="description" placeholder="Description" onChange={handleChange} className="w-full p-2 border rounded" />
+        <textarea
+          name="description"
+          placeholder="Description"
+          onChange={handleChange}
+          className="w-full p-2 border rounded"
+        />
 
         <label className="flex items-center gap-2">
-          <input type="checkbox" name="featured" onChange={handleChange} />
+          <input
+            type="checkbox"
+            name="featured"
+            onChange={handleChange}
+          />
           Featured Event
         </label>
 
@@ -100,8 +158,11 @@ function CreateEventPage() {
         </button>
 
       </form>
+
     </div>
+
   );
+
 }
 
 export default CreateEventPage;

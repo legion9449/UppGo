@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
+import { API_BASE } from "../config";
 
 function AdminDashboard() {
 
@@ -151,8 +152,9 @@ function AdminDashboard() {
             {event.image && (
 
               <img
-                src={`http://127.0.0.1:8000${event.image}`}
+                src={`${API_BASE}${event.image}`}
                 className="w-full h-40 object-cover"
+                alt={event.title}
               />
 
             )}
@@ -229,8 +231,9 @@ function AdminDashboard() {
 
             {selected.image && (
               <img
-                src={`http://127.0.0.1:8000${selected.image}`}
+                src={`${API_BASE}${selected.image}`}
                 className="w-full h-60 object-cover mb-4 rounded"
+                alt={selected.title}
               />
             )}
 
@@ -242,8 +245,6 @@ function AdminDashboard() {
               {selected.description}
             </p>
 
-
-            {/* REJECTION REASON */}
 
             {selected.status === "rejected" && (
 
@@ -259,8 +260,6 @@ function AdminDashboard() {
 
             )}
 
-
-            {/* ACTION BUTTONS */}
 
             <div className="flex justify-between mt-8">
 
