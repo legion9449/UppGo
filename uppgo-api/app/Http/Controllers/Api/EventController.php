@@ -12,6 +12,7 @@ class EventController extends Controller
 
     public function index(Request $request)
     {
+
         $query = Event::where('status', 'approved');
 
         if ($request->has('featured')) {
@@ -21,12 +22,15 @@ class EventController extends Controller
         return $query
             ->orderBy('date', 'desc')
             ->get();
+
     }
 
 
     public function show(Event $event)
     {
+
         return $event;
+
     }
 
 
@@ -43,7 +47,6 @@ class EventController extends Controller
             'image' => 'nullable|image|max:2048'
         ]);
 
-        // Upload image to Google Cloud Storage
         if ($request->hasFile('image')) {
 
             $path = Storage::disk('gcs')->put(
@@ -52,15 +55,14 @@ class EventController extends Controller
             );
 
             $validated['image'] = Storage::disk('gcs')->url($path);
+
         }
 
-        // Attach organizer id
         $validated['user_id'] = $request->user()->id ?? null;
-
-        // New events require approval
         $validated['status'] = 'pending';
 
         return Event::create($validated);
+
     }
 
 
@@ -77,7 +79,6 @@ class EventController extends Controller
             'image' => 'nullable|image|max:2048'
         ]);
 
-        // Upload new image if provided
         if ($request->hasFile('image')) {
 
             $path = Storage::disk('gcs')->put(
@@ -86,21 +87,25 @@ class EventController extends Controller
             );
 
             $validated['image'] = Storage::disk('gcs')->url($path);
+
         }
 
         $event->update($validated);
 
         return response()->json($event);
+
     }
 
 
     public function destroy(Event $event)
     {
+
         $event->delete();
 
         return response()->json([
             'message' => 'Event deleted'
         ]);
+
     }
 
 }
