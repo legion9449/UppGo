@@ -21,12 +21,10 @@ class EventController extends Controller
         return $query->orderBy('date', 'desc')->get();
     }
 
-
     public function show(Event $event)
     {
         return $event;
     }
-
 
     public function store(Request $request)
     {
@@ -47,7 +45,11 @@ class EventController extends Controller
                 $request->file('image')
             );
 
-            $validated['image'] = Storage::disk('gcs')->url($path);
+            $validated['image'] =
+                "https://storage.googleapis.com/" .
+                config('filesystems.disks.gcs.bucket') .
+                "/" .
+                $path;
         }
 
         $validated['user_id'] = $request->user()->id ?? null;
@@ -55,7 +57,6 @@ class EventController extends Controller
 
         return Event::create($validated);
     }
-
 
     public function update(Request $request, Event $event)
     {
@@ -76,14 +77,17 @@ class EventController extends Controller
                 $request->file('image')
             );
 
-            $validated['image'] = Storage::disk('gcs')->url($path);
+            $validated['image'] =
+                "https://storage.googleapis.com/" .
+                config('filesystems.disks.gcs.bucket') .
+                "/" .
+                $path;
         }
 
         $event->update($validated);
 
         return response()->json($event);
     }
-
 
     public function destroy(Event $event)
     {
@@ -93,5 +97,4 @@ class EventController extends Controller
             'message' => 'Event deleted'
         ]);
     }
-
 }
