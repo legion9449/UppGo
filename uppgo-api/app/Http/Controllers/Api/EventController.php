@@ -42,17 +42,13 @@ class EventController extends Controller
 
         if ($request->hasFile('image')) {
 
-    $path = Storage::disk('gcs')->putFile(
-        'events',
-        $request->file('image')
-    );
+            $path = Storage::disk('gcs')->putFile(
+                'events',
+                $request->file('image')
+            );
 
-    $validated['image'] =
-        "https://storage.googleapis.com/" .
-        env('GOOGLE_CLOUD_STORAGE_BUCKET') .
-        "/" .
-        $path;
-}
+            $validated['image'] = Storage::disk('gcs')->url($path);
+        }
 
         $validated['user_id'] = $request->user()->id ?? null;
         $validated['status'] = 'pending';
@@ -73,19 +69,15 @@ class EventController extends Controller
             'image' => 'nullable|image|max:2048'
         ]);
 
-       if ($request->hasFile('image')) {
+        if ($request->hasFile('image')) {
 
-    $path = Storage::disk('gcs')->putFile(
-        'events',
-        $request->file('image')
-    );
+            $path = Storage::disk('gcs')->putFile(
+                'events',
+                $request->file('image')
+            );
 
-    $validated['image'] =
-    "https://storage.googleapis.com/" .
-    config('filesystems.disks.gcs.bucket') .
-    "/" .
-    $path;
-}
+            $validated['image'] = Storage::disk('gcs')->url($path);
+        }
 
         $event->update($validated);
 
@@ -101,4 +93,5 @@ class EventController extends Controller
             'message' => 'Event deleted'
         ]);
     }
+
 }
