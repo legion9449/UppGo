@@ -73,18 +73,19 @@ class EventController extends Controller
             'image' => 'nullable|image|max:2048'
         ]);
 
-        if ($request->hasFile('image')) {
+       if ($request->hasFile('image')) {
 
-            $path = Storage::disk('gcs')->putFile(
-                'events',
-                $request->file('image')
-            );
+    $path = Storage::disk('gcs')->putFile(
+        'events',
+        $request->file('image')
+    );
 
-            $validated['image'] =
-    "https://storage.googleapis.com/" .
-    env('GOOGLE_CLOUD_STORAGE_BUCKET') . "/" .
-    $path;
-        }
+    $validated['image'] =
+        "https://storage.googleapis.com/" .
+        env('GOOGLE_CLOUD_STORAGE_BUCKET') .
+        "/" .
+        $path;
+}
 
         $event->update($validated);
 

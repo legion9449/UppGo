@@ -215,3 +215,7 @@ Route::get('/test-storage', function () {
         env('GOOGLE_CLOUD_STORAGE_BUCKET') . "/" . $path;
 
 });
+
+Route::get('/bucket-test', function () {
+    return env('GOOGLE_CLOUD_STORAGE_BUCKET');
+});
