@@ -204,3 +204,10 @@ Route::get('/recommendations/{userId}', function ($userId) {
         ->get();
 
 });
+
+use Illuminate\Support\Facades\Storage;
+
+Route::get('/test-storage', function () {
+    Storage::disk('gcs')->put('test.txt', 'hello from uppgo');
+    return Storage::disk('gcs')->url('test.txt');
+});
