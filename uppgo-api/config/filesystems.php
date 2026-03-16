@@ -66,6 +66,7 @@ return [
     'path_prefix' => null,
     'storage_api_uri' => null,
     'visibility' => 'public',
+    'url' => 'https://storage.googleapis.com/' . env('GOOGLE_CLOUD_STORAGE_BUCKET'),
     'throw' => false,
 ],
 
