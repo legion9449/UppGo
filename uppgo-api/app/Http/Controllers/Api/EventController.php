@@ -76,7 +76,10 @@ class EventController extends Controller
                 $request->file('image')
             );
 
-            $validated['image'] = Storage::disk('gcs')->url($path);
+            $validated['image'] =
+    "https://storage.googleapis.com/" .
+    env('GOOGLE_CLOUD_STORAGE_BUCKET') . "/" .
+    $path;
         }
 
         $event->update($validated);

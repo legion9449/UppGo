@@ -208,6 +208,10 @@ Route::get('/recommendations/{userId}', function ($userId) {
 use Illuminate\Support\Facades\Storage;
 
 Route::get('/test-storage', function () {
-    Storage::disk('gcs')->put('test.txt', 'hello from uppgo');
-    return Storage::disk('gcs')->url('test.txt');
+
+    $path = Storage::disk('gcs')->put('test.txt', 'hello from uppgo');
+
+    return "https://storage.googleapis.com/" .
+        env('GOOGLE_CLOUD_STORAGE_BUCKET') . "/" . $path;
+
 });
