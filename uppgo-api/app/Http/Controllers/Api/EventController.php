@@ -81,10 +81,10 @@ class EventController extends Controller
     );
 
     $validated['image'] =
-        "https://storage.googleapis.com/" .
-        env('GOOGLE_CLOUD_STORAGE_BUCKET') .
-        "/" .
-        $path;
+    "https://storage.googleapis.com/" .
+    config('filesystems.disks.gcs.bucket') .
+    "/" .
+    $path;
 }
 
         $event->update($validated);
