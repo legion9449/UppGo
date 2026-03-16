@@ -63,7 +63,10 @@ return [
     'driver' => 'gcs',
     'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
     'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET'),
+    'path_prefix' => null,
+    'storage_api_uri' => null,
     'visibility' => 'public',
+    'throw' => false,
 ],
 
 
