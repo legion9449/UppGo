@@ -112,7 +112,7 @@ function AdminEvents() {
 
             {event.image && (
               <img
-                src={`${API_BASE}${event.image}`}
+                src={event.image}
                 className="w-full h-40 object-cover"
                 alt={event.title}
               />

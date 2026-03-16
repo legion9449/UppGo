@@ -29,7 +29,7 @@ function EventDetail() {
       <div className="max-w-4xl mx-auto">
 
         <img
-          src={`${API_URL}${event.image}`}
+          src={event.image}
           alt={event.title}
           className="w-full h-96 object-cover rounded-2xl mb-8"
         />

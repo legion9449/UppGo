@@ -172,7 +172,7 @@ function OrganizerEditEventPage() {
               <p className="mb-2">Current Image</p>
 
               <img
-                src={`${API_URL}${currentImage}`}
+                src={currentImage}
                 className="w-full h-60 object-cover rounded"
               />
 

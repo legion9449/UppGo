@@ -107,7 +107,7 @@ function OrganizerDashboard() {
             {event.image && (
 
               <img
-                src={`${API_URL}${event.image}`}
+                src={event.image}
                 className="w-full h-36 object-cover"
               />
 
@@ -176,7 +176,7 @@ function OrganizerDashboard() {
             {selected.image && (
 
               <img
-                src={`${API_URL}${selected.image}`}
+                src={selected.image}
                 className="w-full h-60 object-cover mb-4 rounded"
               />
 

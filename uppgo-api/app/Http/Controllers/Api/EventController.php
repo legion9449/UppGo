@@ -42,13 +42,17 @@ class EventController extends Controller
 
         if ($request->hasFile('image')) {
 
-            $path = Storage::disk('gcs')->putFile(
-                'events',
-                $request->file('image')
-            );
+    $path = Storage::disk('gcs')->putFile(
+        'events',
+        $request->file('image')
+    );
 
-            $validated['image'] = Storage::disk('gcs')->url($path);
-        }
+    $validated['image'] =
+        "https://storage.googleapis.com/" .
+        env('GOOGLE_CLOUD_STORAGE_BUCKET') .
+        "/" .
+        $path;
+}
 
         $validated['user_id'] = $request->user()->id ?? null;
         $validated['status'] = 'pending';

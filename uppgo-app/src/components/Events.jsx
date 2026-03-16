@@ -134,7 +134,7 @@ function Events() {
 
               {event.image && (
                 <img
-                  src={`${API_URL}${event.image}`}
+                  src={event.image}
                   alt={event.title}
                   className="w-full h-60 object-cover group-hover:scale-105 transition"
                 />

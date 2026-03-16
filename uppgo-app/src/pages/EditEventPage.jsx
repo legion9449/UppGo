@@ -188,7 +188,7 @@ function EditEventPage() {
               </p>
 
               <img
-                src={`${API_URL}${currentImage}`}
+                src={currentImage}
                 alt="Event"
                 className="w-full h-60 object-cover rounded-lg"
               />
