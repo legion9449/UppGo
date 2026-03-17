@@ -37,17 +37,14 @@ class EventController extends Controller
             'image' => 'nullable|image|max:2048'
         ]);
 
+        // ✅ FIX: use public disk instead of gcs
         if ($request->hasFile('image')) {
 
             $file = $request->file('image');
 
-            $path = Storage::disk('gcs')->putFile('events', $file);
+            $path = $file->store('events', 'public');
 
-            // ✅ manual URL (IMPORTANT)
-            $validated['image'] =
-                'https://storage.googleapis.com/' .
-                env('GOOGLE_CLOUD_STORAGE_BUCKET') .
-                '/' . $path;
+            $validated['image'] = url('/storage/' . $path);
         }
 
         $validated['user_id'] = $request->user()->id ?? null;
@@ -68,16 +65,14 @@ class EventController extends Controller
             'image' => 'nullable|image|max:2048'
         ]);
 
+        // ✅ FIX: use public disk instead of gcs
         if ($request->hasFile('image')) {
 
             $file = $request->file('image');
 
-            $path = Storage::disk('gcs')->putFile('events', $file);
+            $path = $file->store('events', 'public');
 
-            $validated['image'] =
-                'https://storage.googleapis.com/' .
-                env('GOOGLE_CLOUD_STORAGE_BUCKET') .
-                '/' . $path;
+            $validated['image'] = url('/storage/' . $path);
         }
 
         $event->update($validated);
