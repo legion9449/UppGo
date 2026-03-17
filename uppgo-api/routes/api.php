@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\EventController;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Event;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,7 +40,6 @@ Route::get('/organizer/events/{userId}', function (Request $request, $userId) {
 
 });
 
-
 /*
 |--------------------------------------------------------------------------
 | ADMIN EVENT MODERATION
@@ -47,29 +47,22 @@ Route::get('/organizer/events/{userId}', function (Request $request, $userId) {
 */
 
 Route::get('/admin/pending-events', function () {
-
     return Event::where('status', 'pending')
         ->orderBy('created_at', 'desc')
         ->paginate(10);
-
 });
 
 Route::get('/admin/approved-events', function () {
-
     return Event::where('status', 'approved')
         ->orderBy('created_at', 'desc')
         ->paginate(10);
-
 });
 
 Route::get('/admin/rejected-events', function () {
-
     return Event::where('status', 'rejected')
         ->orderBy('created_at', 'desc')
         ->paginate(10);
-
 });
-
 
 Route::put('/events/{event}/approve', function (Event $event) {
 
@@ -79,7 +72,6 @@ Route::put('/events/{event}/approve', function (Event $event) {
     return response()->json($event);
 
 });
-
 
 Route::put('/events/{event}/reject', function (Request $request, Event $event) {
 
@@ -91,7 +83,6 @@ Route::put('/events/{event}/reject', function (Request $request, Event $event) {
 
 });
 
-
 Route::put('/events/{event}/feature', function (Event $event) {
 
     $event->featured = !$event->featured;
@@ -100,7 +91,6 @@ Route::put('/events/{event}/feature', function (Event $event) {
     return response()->json($event);
 
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -127,7 +117,6 @@ Route::post('/signup', function (Request $request) {
 
 });
 
-
 Route::post('/login', function (Request $request) {
 
     $user = User::where('name', $request->username)->first();
@@ -149,7 +138,6 @@ Route::post('/login', function (Request $request) {
 
 });
 
-
 /*
 |--------------------------------------------------------------------------
 | USER INTERESTS
@@ -170,7 +158,6 @@ Route::put('/user/interests/{id}', function (Request $request, $id) {
     ]);
 
 });
-
 
 /*
 |--------------------------------------------------------------------------
@@ -205,17 +192,30 @@ Route::get('/recommendations/{userId}', function ($userId) {
 
 });
 
-use Illuminate\Support\Facades\Storage;
+/*
+|--------------------------------------------------------------------------
+| TEST STORAGE (FIXED - NO GCS)
+|--------------------------------------------------------------------------
+*/
 
 Route::get('/test-storage', function () {
 
-    $path = Storage::disk('gcs')->put('test.txt', 'hello from uppgo');
+    $path = Storage::disk('public')->put('test.txt', 'hello from uppgo');
 
-    return "https://storage.googleapis.com/" .
-        env('GOOGLE_CLOUD_STORAGE_BUCKET') . "/" . $path;
+    return response()->json([
+        'message' => 'File stored successfully',
+        'path' => $path,
+        'url' => url('/storage/' . $path)
+    ]);
 
 });
 
+/*
+|--------------------------------------------------------------------------
+| DEBUG
+|--------------------------------------------------------------------------
+*/
+
 Route::get('/bucket-test', function () {
-    return env('GOOGLE_CLOUD_STORAGE_BUCKET');
+    return 'Using local/public storage';
 });
