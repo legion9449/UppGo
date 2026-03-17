@@ -10,24 +10,6 @@ use Illuminate\Support\Facades\Storage;
 class EventController extends Controller
 {
 
-    public function index(Request $request)
-    {
-        $query = Event::where('status', 'approved');
-
-        if ($request->has('featured')) {
-            $query->where('featured', true);
-        }
-
-        return $query->orderBy('date', 'desc')->get();
-    }
-
-
-    public function show(Event $event)
-    {
-        return $event;
-    }
-
-
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -40,31 +22,30 @@ class EventController extends Controller
             'image' => 'nullable|image|max:2048'
         ]);
 
-        try {
+        if ($request->hasFile('image')) {
 
-            if ($request->hasFile('image')) {
+            // ✅ FORCE UNIQUE FILE NAME
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName();
 
-                $path = Storage::disk('gcs')->putFile(
-                    'events',
-                    $request->file('image')
-                );
+            // ✅ STORE FILE
+            $path = Storage::disk('gcs')->putFileAs(
+                'events',
+                $file,
+                $filename
+            );
 
-                $bucket = env('GOOGLE_CLOUD_STORAGE_BUCKET');
-
-                $validated['image'] =
-                    "https://storage.googleapis.com/" .
-                    $bucket .
-                    "/" .
-                    $path;
+            // 🔥 DEBUG (optional)
+            if (!$path) {
+                return response()->json(['error' => 'Upload failed'], 500);
             }
 
-        } catch (\Exception $e) {
-
-            return response()->json([
-                'message' => 'Image upload failed',
-                'error' => $e->getMessage()
-            ], 500);
-
+            // ✅ FULL URL
+            $validated['image'] =
+                "https://storage.googleapis.com/" .
+                env('GOOGLE_CLOUD_STORAGE_BUCKET') .
+                "/" .
+                $path;
         }
 
         $validated['user_id'] = $request->user()->id ?? null;
@@ -86,46 +67,30 @@ class EventController extends Controller
             'image' => 'nullable|image|max:2048'
         ]);
 
-        try {
+        if ($request->hasFile('image')) {
 
-            if ($request->hasFile('image')) {
+            $file = $request->file('image');
+            $filename = time() . '_' . $file->getClientOriginalName();
 
-                $path = Storage::disk('gcs')->putFile(
-                    'events',
-                    $request->file('image')
-                );
+            $path = Storage::disk('gcs')->putFileAs(
+                'events',
+                $file,
+                $filename
+            );
 
-                $bucket = env('GOOGLE_CLOUD_STORAGE_BUCKET');
-
-                $validated['image'] =
-                    "https://storage.googleapis.com/" .
-                    $bucket .
-                    "/" .
-                    $path;
+            if (!$path) {
+                return response()->json(['error' => 'Upload failed'], 500);
             }
 
-        } catch (\Exception $e) {
-
-            return response()->json([
-                'message' => 'Image update failed',
-                'error' => $e->getMessage()
-            ], 500);
-
+            $validated['image'] =
+                "https://storage.googleapis.com/" .
+                env('GOOGLE_CLOUD_STORAGE_BUCKET') .
+                "/" .
+                $path;
         }
 
         $event->update($validated);
 
         return response()->json($event);
     }
-
-
-    public function destroy(Event $event)
-    {
-        $event->delete();
-
-        return response()->json([
-            'message' => 'Event deleted'
-        ]);
-    }
-
 }

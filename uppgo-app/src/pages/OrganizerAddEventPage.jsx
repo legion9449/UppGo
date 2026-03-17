@@ -12,16 +12,13 @@ function OrganizerAddEventPage() {
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState("");
   const [image, setImage] = useState(null);
-
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
     setLoading(true);
 
     try {
-
       const formData = new FormData();
 
       formData.append("title", title);
@@ -34,26 +31,20 @@ function OrganizerAddEventPage() {
         formData.append("image", image);
       }
 
-      await api.post("/events", formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
+      await api.post("/events", formData);
 
       alert("Event submitted for approval");
-
       navigate("/organizer");
 
     } catch (err) {
-
-      console.log(err);
+      console.error(err);
       alert("Error creating event");
-
     }
 
     setLoading(false);
   };
 
   return (
-
     <div className="min-h-screen bg-gray-100 pt-24 pb-20">
 
       <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow-lg">
@@ -68,7 +59,7 @@ function OrganizerAddEventPage() {
             type="text"
             placeholder="Event Title"
             value={title}
-            onChange={(e)=>setTitle(e.target.value)}
+            onChange={(e) => setTitle(e.target.value)}
             className="w-full border p-3 rounded-lg"
             required
           />
@@ -76,7 +67,7 @@ function OrganizerAddEventPage() {
           <textarea
             placeholder="Description"
             value={description}
-            onChange={(e)=>setDescription(e.target.value)}
+            onChange={(e) => setDescription(e.target.value)}
             className="w-full border p-3 rounded-lg"
             rows="4"
             required
@@ -87,7 +78,7 @@ function OrganizerAddEventPage() {
             <input
               type="date"
               value={date}
-              onChange={(e)=>setDate(e.target.value)}
+              onChange={(e) => setDate(e.target.value)}
               className="w-full border p-3 rounded-lg"
               required
             />
@@ -96,7 +87,7 @@ function OrganizerAddEventPage() {
               type="text"
               placeholder="Location"
               value={location}
-              onChange={(e)=>setLocation(e.target.value)}
+              onChange={(e) => setLocation(e.target.value)}
               className="w-full border p-3 rounded-lg"
               required
             />
@@ -107,13 +98,14 @@ function OrganizerAddEventPage() {
             type="text"
             placeholder="Category"
             value={category}
-            onChange={(e)=>setCategory(e.target.value)}
+            onChange={(e) => setCategory(e.target.value)}
             className="w-full border p-3 rounded-lg"
           />
 
           <input
             type="file"
-            onChange={(e)=>setImage(e.target.files[0])}
+            accept="image/*"
+            onChange={(e) => setImage(e.target.files[0])}
             className="w-full"
           />
 
@@ -130,9 +122,7 @@ function OrganizerAddEventPage() {
       </div>
 
     </div>
-
   );
-
 }
 
 export default OrganizerAddEventPage;
