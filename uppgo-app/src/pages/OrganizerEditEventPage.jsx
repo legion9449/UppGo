@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api";
-import { API_URL } from "../config";
 
 function OrganizerEditEventPage() {
 
@@ -19,6 +18,7 @@ function OrganizerEditEventPage() {
   });
 
   const [currentImage, setCurrentImage] = useState("");
+  const [preview, setPreview] = useState(null); // ✅ NEW
 
   useEffect(() => {
 
@@ -34,7 +34,7 @@ function OrganizerEditEventPage() {
           date: event.date,
           location: event.location,
           category: event.category,
-          eventType: event.eventType,
+          eventType: event.eventType || "Non-Nations",
           description: event.description,
           image: null
         });
@@ -59,10 +59,17 @@ function OrganizerEditEventPage() {
 
   const handleImageChange = (e)=>{
 
+    const file = e.target.files[0];
+
     setForm({
       ...form,
-      image:e.target.files[0]
+      image:file
     });
+
+    // ✅ Preview new image
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+    }
 
   };
 
@@ -85,20 +92,20 @@ function OrganizerEditEventPage() {
         formData.append("image",form.image);
       }
 
-      await api.post(`/events/${id}?_method=PUT`,formData,{
+      await api.post(`/events/${id}?_method=PUT`,formData, {
         headers:{
           "Content-Type":"multipart/form-data"
         }
       });
 
-      alert("Event updated");
+      alert("✅ Event updated");
 
       navigate("/organizer");
 
     }catch(err){
 
       console.log(err);
-      alert("Update failed");
+      alert("❌ Update failed");
 
     }
 
@@ -165,15 +172,34 @@ function OrganizerEditEventPage() {
             className="w-full border p-3 rounded"
           />
 
-          {currentImage && (
+          {/* CURRENT IMAGE */}
+          {currentImage && !preview && (
 
             <div>
 
-              <p className="mb-2">Current Image</p>
+              <p className="mb-2 font-semibold">Current Image</p>
 
               <img
-                src={currentImage}
+                src={currentImage || "/default-event.jpg"}
                 className="w-full h-60 object-cover rounded"
+                alt="Current"
+              />
+
+            </div>
+
+          )}
+
+          {/* NEW PREVIEW */}
+          {preview && (
+
+            <div>
+
+              <p className="mb-2 font-semibold">New Image Preview</p>
+
+              <img
+                src={preview}
+                className="w-full h-60 object-cover rounded"
+                alt="Preview"
               />
 
             </div>
@@ -182,13 +208,14 @@ function OrganizerEditEventPage() {
 
           <input
             type="file"
+            accept="image/*"
             onChange={handleImageChange}
             className="w-full border p-3 rounded"
           />
 
           <button
             type="submit"
-            className="bg-black text-white px-6 py-3 rounded w-full"
+            className="bg-black text-white px-6 py-3 rounded w-full hover:opacity-90"
           >
             Update Event
           </button>

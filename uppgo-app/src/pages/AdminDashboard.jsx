@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
-import { API_BASE } from "../config";
 
 function AdminDashboard() {
 
@@ -84,6 +83,32 @@ function AdminDashboard() {
   };
 
 
+  // ✅ DELETE FUNCTION
+  const deleteEvent = async (id) => {
+
+    const confirmDelete = confirm("Are you sure you want to delete this event?");
+
+    if (!confirmDelete) return;
+
+    try {
+
+      await api.delete(`/events/${id}`);
+
+      alert("✅ Event deleted");
+
+      setSelected(null);
+      loadEvents();
+
+    } catch (err) {
+
+      console.log(err);
+      alert("❌ Delete failed");
+
+    }
+
+  };
+
+
   return (
 
     <div className="p-10">
@@ -149,15 +174,11 @@ function AdminDashboard() {
             className="cursor-pointer border rounded-xl overflow-hidden shadow hover:shadow-lg"
           >
 
-            {event.image && (
-
-              <img
-                src={event.image}
-                className="w-full h-40 object-cover"
-                alt={event.title}
-              />
-
-            )}
+            <img
+              src={event.image || "/default-event.jpg"}
+              className="w-full h-40 object-cover"
+              alt={event.title}
+            />
 
             <div className="p-4">
 
@@ -193,12 +214,12 @@ function AdminDashboard() {
           ◀ Previous
         </button>
 
-        {Array.from({length: lastPage}, (_,i)=>i+1).map((p)=>(
+        {Array.from({length:lastPage},(_,i)=>i+1).map((p)=>(
           <button
             key={p}
             onClick={()=>setPage(p)}
             className={`px-4 py-2 border rounded ${
-              p === page ? "bg-black text-white":""
+              p===page ? "bg-black text-white":""
             }`}
           >
             {p}
@@ -216,7 +237,6 @@ function AdminDashboard() {
       </div>
 
 
-
       {/* EVENT MODAL */}
 
       {selected && (
@@ -229,13 +249,11 @@ function AdminDashboard() {
               {selected.title}
             </h2>
 
-            {selected.image && (
-              <img
-                src={`${API_BASE}${selected.image}`}
-                className="w-full h-60 object-cover mb-4 rounded"
-                alt={selected.title}
-              />
-            )}
+            <img
+              src={selected.image || "/default-event.jpg"}
+              className="w-full h-60 object-cover mb-4 rounded"
+              alt={selected.title}
+            />
 
             <p><b>Date:</b> {selected.date}</p>
             <p><b>Location:</b> {selected.location}</p>
@@ -263,33 +281,41 @@ function AdminDashboard() {
 
             <div className="flex justify-between mt-8">
 
-              {selected.status === "approved" && (
+              <div className="flex gap-3">
 
-                <div className="flex gap-3">
+                {selected.status === "approved" && (
+                  <>
+                    <button
+                      onClick={()=>navigate(`/admin/edit/${selected.id}`)}
+                      className="bg-black text-white px-4 py-2 rounded"
+                    >
+                      Edit Event
+                    </button>
 
-                  <button
-                    onClick={()=>navigate(`/admin/edit/${selected.id}`)}
-                    className="bg-black text-white px-4 py-2 rounded"
-                  >
-                    Edit Event
-                  </button>
+                    <button
+                      onClick={()=>toggleFeatured(selected.id)}
+                      className={`px-4 py-2 rounded ${
+                        selected.featured
+                          ? "bg-yellow-500 text-white"
+                          : "border"
+                      }`}
+                    >
+                      {selected.featured
+                        ? "Remove Featured"
+                        : "Make Featured"}
+                    </button>
+                  </>
+                )}
 
-                  <button
-                    onClick={()=>toggleFeatured(selected.id)}
-                    className={`px-4 py-2 rounded ${
-                      selected.featured
-                      ? "bg-yellow-500 text-white"
-                      : "border"
-                    }`}
-                  >
-                    {selected.featured
-                      ? "Remove Featured"
-                      : "Make Featured"}
-                  </button>
+                {/* ✅ DELETE BUTTON */}
+                <button
+                  onClick={()=>deleteEvent(selected.id)}
+                  className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                >
+                  Delete
+                </button>
 
-                </div>
-
-              )}
+              </div>
 
               <button
                 onClick={()=>setSelected(null)}

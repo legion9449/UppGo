@@ -12,7 +12,18 @@ function OrganizerAddEventPage() {
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState("");
   const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState(null); // ✅ NEW
   const [loading, setLoading] = useState(false);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setImage(file);
+
+    // ✅ Preview image
+    if (file) {
+      setPreview(URL.createObjectURL(file));
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,12 +44,12 @@ function OrganizerAddEventPage() {
 
       await api.post("/events", formData);
 
-      alert("Event submitted for approval");
+      alert("✅ Event submitted for approval");
       navigate("/organizer");
 
     } catch (err) {
       console.error(err);
-      alert("Error creating event");
+      alert("❌ Error creating event");
     }
 
     setLoading(false);
@@ -102,12 +113,24 @@ function OrganizerAddEventPage() {
             className="w-full border p-3 rounded-lg"
           />
 
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setImage(e.target.files[0])}
-            className="w-full"
-          />
+          {/* ✅ IMAGE UPLOAD */}
+          <div>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="w-full"
+            />
+
+            {/* ✅ PREVIEW */}
+            {preview && (
+              <img
+                src={preview}
+                alt="Preview"
+                className="mt-4 w-full h-48 object-cover rounded-lg"
+              />
+            )}
+          </div>
 
           <button
             type="submit"

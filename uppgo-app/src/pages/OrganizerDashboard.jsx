@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
-import { API_URL } from "../config";
 
 function OrganizerDashboard() {
 
@@ -17,11 +16,8 @@ function OrganizerDashboard() {
   const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
-
     if (!user) return;
-
     loadEvents();
-
   }, [tab, page]);
 
   const loadEvents = async () => {
@@ -63,6 +59,8 @@ function OrganizerDashboard() {
 
       </div>
 
+      {/* TABS */}
+
       <div className="flex gap-4 mb-10">
 
         <button
@@ -94,42 +92,51 @@ function OrganizerDashboard() {
 
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      {/* EVENTS */}
 
-        {events.map((event)=>(
+      {events.length === 0 ? (
 
-          <div
-            key={event.id}
-            onClick={()=>setSelected(event)}
-            className="cursor-pointer border rounded-xl overflow-hidden shadow hover:shadow-lg transition"
-          >
+        <p className="text-gray-500">No events found</p>
 
-            {event.image && (
+      ) : (
+
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+
+          {events.map((event)=>(
+
+            <div
+              key={event.id}
+              onClick={()=>setSelected(event)}
+              className="cursor-pointer border rounded-xl overflow-hidden shadow hover:shadow-lg transition"
+            >
 
               <img
-                src={event.image}
+                src={event.image || "/default-event.jpg"}   // ✅ fallback
                 className="w-full h-36 object-cover"
+                alt={event.title}
               />
 
-            )}
+              <div className="p-4">
 
-            <div className="p-4">
+                <h3 className="font-bold text-lg">
+                  {event.title}
+                </h3>
 
-              <h3 className="font-bold text-lg">
-                {event.title}
-              </h3>
+                <p className="text-sm text-gray-500">
+                  {event.date}
+                </p>
 
-              <p className="text-sm text-gray-500">
-                {event.date}
-              </p>
+              </div>
 
             </div>
 
-          </div>
+          ))}
 
-        ))}
+        </div>
 
-      </div>
+      )}
+
+      {/* PAGINATION */}
 
       <div className="flex justify-center gap-4 mt-12">
 
@@ -163,6 +170,8 @@ function OrganizerDashboard() {
 
       </div>
 
+      {/* MODAL */}
+
       {selected && (
 
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
@@ -173,14 +182,11 @@ function OrganizerDashboard() {
               {selected.title}
             </h2>
 
-            {selected.image && (
-
-              <img
-                src={selected.image}
-                className="w-full h-60 object-cover mb-4 rounded"
-              />
-
-            )}
+            <img
+              src={selected.image || "/default-event.jpg"}   // ✅ fallback
+              className="w-full h-60 object-cover mb-4 rounded"
+              alt={selected.title}
+            />
 
             <p><b>Date:</b> {selected.date}</p>
             <p><b>Location:</b> {selected.location}</p>
