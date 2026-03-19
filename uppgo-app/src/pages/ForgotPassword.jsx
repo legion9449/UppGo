@@ -5,41 +5,32 @@ function ForgotPassword() {
   const [email, setEmail] = useState("");
 
   const handleSubmit = (e) => {
-
     e.preventDefault();
-
-    alert("Password reset link sent (demo)");
-
+    alert("Reset link sent (demo)");
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 pt-24">
+    <div className="min-h-screen flex justify-center items-center bg-gray-100">
 
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-10 rounded-2xl shadow-xl w-96"
-      >
+      <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow w-96">
 
-        <h2 className="text-3xl font-bold mb-6 text-center">
-          Reset Password
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          Forgot Password
         </h2>
 
         <input
           type="email"
-          placeholder="Enter your email"
+          placeholder="Email"
+          className="w-full border p-3 mb-4 rounded"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full border px-4 py-3 rounded-lg mb-6"
+          onChange={(e)=>setEmail(e.target.value)}
         />
 
-        <button
-          className="w-full bg-black text-white py-3 rounded-full"
-        >
+        <button className="w-full bg-black text-white py-3 rounded">
           Send Reset Link
         </button>
 
       </form>
-
     </div>
   );
 }

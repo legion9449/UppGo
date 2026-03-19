@@ -1,12 +1,20 @@
 import { Navigate } from "react-router-dom";
 
-function ProtectedRoute({ children }) {
-  const isAdmin = localStorage.getItem("isAdmin") === "true";
+function ProtectedRoute({ children, role }) {
 
-  if (!isAdmin) {
-    return <Navigate to="/login" replace />;
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  // ❌ Not logged in
+  if (!user) {
+    return <Navigate to="/login" />;
   }
 
+  // ❌ Role mismatch
+  if (role && user.role !== role) {
+    return <Navigate to="/" />;
+  }
+
+  // ✅ Allowed
   return children;
 }
 

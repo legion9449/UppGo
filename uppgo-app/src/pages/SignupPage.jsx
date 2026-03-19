@@ -11,218 +11,237 @@ function SignupPage() {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "user",
+    role: "",
     interests: []
   });
 
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
+  const [showPasswordHint, setShowPasswordHint] = useState(false);
 
-  const interestOptions = [
-    "Music",
-    "Sports",
-    "Food",
-    "Culture",
-    "Nature"
-  ];
+  const categories = ["Music", "Sports", "Food", "Culture", "Nature"];
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
 
     setForm({
       ...form,
-      [e.target.name]: e.target.value
+      [name]: value
     });
 
+    setErrors({
+      ...errors,
+      [name]: ""
+    });
   };
 
-  const handleCheckbox = (e) => {
+  const handleCheckbox = (category) => {
 
-    const value = e.target.value;
+    let updated = [...form.interests];
 
-    if (form.interests.includes(value)) {
-
-      setForm({
-        ...form,
-        interests: form.interests.filter(i => i !== value)
-      });
-
+    if (updated.includes(category)) {
+      updated = updated.filter((c) => c !== category);
     } else {
-
-      setForm({
-        ...form,
-        interests: [...form.interests, value]
-      });
-
+      updated.push(category);
     }
 
+    setForm({
+      ...form,
+      interests: updated
+    });
+
+    setErrors({
+      ...errors,
+      interests: ""
+    });
   };
 
-  const validatePassword = (password) => {
+  // 🔐 VALIDATION
+  const validate = () => {
 
-    const regex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+    let newErrors = {};
 
-    return regex.test(password);
+    if (!form.name) newErrors.name = "Name is required";
+    if (!form.email) newErrors.email = "Email is required";
+    if (!form.role) newErrors.role = "Select account type";
+    if (form.interests.length === 0) newErrors.interests = "Select at least one";
 
+    if (!form.password) {
+      newErrors.password = "Password is required";
+    } else if (
+      !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(form.password)
+    ) {
+      newErrors.password = "Weak password";
+    }
+
+    if (!form.confirmPassword) {
+      newErrors.confirmPassword = "Confirm your password";
+    } else if (form.password !== form.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
+    return newErrors;
   };
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
-    if (!validatePassword(form.password)) {
+    const validationErrors = validate();
 
-      setError(
-        "Password must contain uppercase, lowercase, number and special character"
-      );
-
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
-
-    }
-
-    if (form.password !== form.confirmPassword) {
-
-      setError("Passwords do not match");
-
-      return;
-
-    }
-
-    if (form.interests.length === 0) {
-
-      setError("Select at least one interest");
-
-      return;
-
     }
 
     try {
 
-      const res = await api.post("/signup", form);
+      const res = await api.post("/signup", {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: form.role,
+        interests: form.interests
+      });
 
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      const { user, token } = res.data;
 
-      navigate("/user-dashboard");
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
-    } catch {
+      window.dispatchEvent(new Event("authChange"));
 
-      setError("Signup failed");
+      // ✅ ROLE-BASED REDIRECT
+      if (user.role === "admin") {
+        navigate("/admin");
+      } else if (user.role === "organizer") {
+        navigate("/organizer");
+      } else {
+        navigate("/user");
+      }
 
+    } catch (err) {
+      alert("Signup failed");
     }
-
   };
 
   return (
+
     <div className="min-h-screen flex items-center justify-center bg-gray-100 pt-24">
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-10 rounded-2xl shadow-xl w-[420px]"
+        className="bg-white p-10 rounded-2xl shadow-lg border w-full max-w-md"
       >
 
-        <h2 className="text-3xl font-bold mb-6 text-center">
+        <h2 className="text-2xl font-bold text-center mb-4">
           Create Account
         </h2>
 
-        {error && (
-          <div className="text-red-500 text-sm mb-4 text-center">
-            {error}
-          </div>
-        )}
-
-        {/* Name */}
+        {/* NAME */}
         <input
           type="text"
           name="name"
-          placeholder="Full Name"
+          placeholder="Name"
+          className={`w-full p-3 rounded mb-2 border ${
+            errors.name ? "border-red-500" : "border-gray-300"
+          } focus:outline-none focus:ring-2 focus:ring-black`}
           value={form.name}
           onChange={handleChange}
-          className="w-full border px-4 py-3 rounded-lg mb-4"
-          required
         />
+        {errors.name && <p className="text-red-500 text-sm mb-2">{errors.name}</p>}
 
-        {/* Email */}
+        {/* EMAIL */}
         <input
           type="email"
           name="email"
           placeholder="Email"
+          className={`w-full p-3 rounded mb-2 border ${
+            errors.email ? "border-red-500" : "border-gray-300"
+          } focus:outline-none focus:ring-2 focus:ring-black`}
           value={form.email}
           onChange={handleChange}
-          className="w-full border px-4 py-3 rounded-lg mb-4"
-          required
         />
+        {errors.email && <p className="text-red-500 text-sm mb-2">{errors.email}</p>}
 
-        {/* Role Dropdown */}
-        <div className="mb-4">
+        {/* ROLE */}
+        <select
+          name="role"
+          value={form.role}
+          onChange={handleChange}
+          className={`w-full p-3 rounded mb-2 border ${
+            errors.role ? "border-red-500" : "border-gray-300"
+          }`}
+        >
+          <option value="">Select Account Type</option>
+          <option value="user">User</option>
+          <option value="organizer">Organizer</option>
+        </select>
+        {errors.role && <p className="text-red-500 text-sm mb-2">{errors.role}</p>}
 
-          <label className="block mb-2 font-semibold">
-            Account Type
-          </label>
+        {/* INTERESTS */}
+        <div className="mb-3">
+          <p className="font-medium mb-1">Interested Type</p>
 
-          <select
-            name="role"
-            value={form.role}
-            onChange={handleChange}
-            className="w-full border px-4 py-3 rounded-lg"
-          >
-
-            <option value="user">User</option>
-            <option value="organizer">Organizer</option>
-
-          </select>
-
-        </div>
-
-        {/* Interests */}
-        <div className="mb-4">
-
-          <p className="font-semibold mb-2">
-            Interested Type
-          </p>
-
-          {interestOptions.map((interest) => (
-
-            <label key={interest} className="flex gap-2 mb-1">
-
+          {categories.map((cat) => (
+            <label key={cat} className="flex items-center gap-2">
               <input
                 type="checkbox"
-                value={interest}
-                onChange={handleCheckbox}
+                onChange={() => handleCheckbox(cat)}
+                className="accent-black"
               />
-
-              {interest}
-
+              {cat}
             </label>
-
           ))}
 
+          {errors.interests && (
+            <p className="text-red-500 text-sm mt-1">{errors.interests}</p>
+          )}
         </div>
 
-        {/* Password */}
+        {/* PASSWORD */}
         <input
           type="password"
           name="password"
           placeholder="Password"
+          onFocus={() => setShowPasswordHint(true)}
+          className={`w-full p-3 rounded mb-2 border ${
+            errors.password ? "border-red-500" : "border-gray-300"
+          }`}
           value={form.password}
           onChange={handleChange}
-          className="w-full border px-4 py-3 rounded-lg mb-4"
-          required
         />
 
-        {/* Confirm Password */}
+        {showPasswordHint && (
+          <p className="text-xs text-gray-500 mb-2">
+            Must contain uppercase, lowercase, number & special character
+          </p>
+        )}
+
+        {errors.password && (
+          <p className="text-red-500 text-sm mb-2">{errors.password}</p>
+        )}
+
+        {/* CONFIRM PASSWORD */}
         <input
           type="password"
           name="confirmPassword"
           placeholder="Confirm Password"
+          className={`w-full p-3 rounded mb-2 border ${
+            errors.confirmPassword ? "border-red-500" : "border-gray-300"
+          }`}
           value={form.confirmPassword}
           onChange={handleChange}
-          className="w-full border px-4 py-3 rounded-lg mb-6"
-          required
         />
 
+        {errors.confirmPassword && (
+          <p className="text-red-500 text-sm mb-3">
+            {errors.confirmPassword}
+          </p>
+        )}
+
+        {/* BUTTON */}
         <button
           type="submit"
-          className="w-full bg-black text-white py-3 rounded-full"
+          className="w-full bg-black text-white py-3 rounded-full hover:opacity-90 transition"
         >
           Sign Up
         </button>
@@ -231,7 +250,6 @@ function SignupPage() {
 
     </div>
   );
-
 }
 
 export default SignupPage;

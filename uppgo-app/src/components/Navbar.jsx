@@ -1,128 +1,103 @@
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
 
 function Navbar() {
-
-  const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false);
 
-  const dropdownRef = useRef();
+  const navigate = useNavigate();
 
   useEffect(() => {
 
-    const storedUser = localStorage.getItem("user");
+    const loadUser = () => {
+      const storedUser = localStorage.getItem("user");
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    };
 
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    loadUser();
+    window.addEventListener("authChange", loadUser);
+
+    return () => window.removeEventListener("authChange", loadUser);
 
   }, []);
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-
-    const handleClickOutside = (event) => {
-
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setOpen(false);
-      }
-
-    };
-
-    document.addEventListener("click", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-
-  }, []);
-
-  const logout = () => {
-
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-
-    setUser(null);
-
+  const handleLogout = () => {
+    localStorage.clear();
+    window.dispatchEvent(new Event("authChange"));
     navigate("/");
-
-    window.location.reload();
-
-  };
-
-  const goDashboard = () => {
-
-    if (!user) return;
-
-    if (user.role === "admin") {
-      navigate("/admin");
-    }
-    else if (user.role === "organizer") {
-      navigate("/organizer");
-    }
-    else {
-      navigate("/user-dashboard");
-    }
-
-    setOpen(false);
-
   };
 
   return (
 
-    <nav className="fixed top-0 w-full bg-black text-white z-50">
+    <nav className="fixed top-0 w-full bg-black text-white z-50 shadow-md">
 
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-8 py-4">
+      <div className="max-w-7xl mx-auto flex justify-between items-center px-8 py-5">
 
-        <Link to="/" className="text-2xl font-bold">
+        {/* LOGO */}
+        <Link
+          to="/"
+          className="text-2xl font-bold tracking-wide hover:opacity-80"
+        >
           UppGo
         </Link>
 
-        <div className="flex items-center gap-6">
-
-          <Link to="/events">
-            Events
-          </Link>
+        {/* RIGHT SIDE */}
+        <div className="flex items-center gap-6 text-lg">
 
           {!user && (
-            <Link to="/login">
+            <Link
+              to="/login"
+              className="hover:text-gray-300 transition"
+            >
               Login
             </Link>
           )}
 
           {user && (
-
-            <div className="relative" ref={dropdownRef}>
+            <div className="relative">
 
               <button
                 onClick={() => setOpen(!open)}
-                className="flex items-center gap-2 hover:opacity-80"
+                className="hover:text-gray-300 transition"
               >
                 {user.name} ▼
               </button>
 
               {open && (
 
-                <div className="absolute right-0 mt-3 w-48 bg-white text-black rounded-lg shadow-lg overflow-hidden">
+                <div className="absolute right-0 mt-3 w-52 bg-white text-black rounded-xl shadow-lg overflow-hidden">
+
+                  {user.role === "admin" && (
+                    <button
+                      onClick={() => navigate("/admin")}
+                      className="w-full text-left px-5 py-3 hover:bg-gray-100"
+                    >
+                      Admin Dashboard
+                    </button>
+                  )}
+
+                  {user.role === "organizer" && (
+                    <button
+                      onClick={() => navigate("/organizer")}
+                      className="w-full text-left px-5 py-3 hover:bg-gray-100"
+                    >
+                      Organizer Dashboard
+                    </button>
+                  )}
+
+                  {user.role === "user" && (
+                    <button
+                      onClick={() => navigate("/user")}
+                      className="w-full text-left px-5 py-3 hover:bg-gray-100"
+                    >
+                      User Dashboard
+                    </button>
+                  )}
 
                   <button
-                    onClick={goDashboard}
-                    className="w-full text-left px-4 py-3 hover:bg-gray-100"
-                  >
-
-                    {user.role === "admin" && "Admin Dashboard"}
-
-                    {user.role === "organizer" && "Organizer Dashboard"}
-
-                    {user.role === "user" && "My Profile"}
-
-                  </button>
-
-                  <button
-                    onClick={logout}
-                    className="w-full text-left px-4 py-3 hover:bg-gray-100"
+                    onClick={handleLogout}
+                    className="w-full text-left px-5 py-3 text-red-600 hover:bg-gray-100"
                   >
                     Logout
                   </button>
@@ -132,7 +107,6 @@ function Navbar() {
               )}
 
             </div>
-
           )}
 
         </div>
@@ -142,7 +116,6 @@ function Navbar() {
     </nav>
 
   );
-
 }
 
 export default Navbar;

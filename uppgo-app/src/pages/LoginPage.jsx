@@ -8,107 +8,75 @@ function LoginPage() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
 
   const handleLogin = async (e) => {
-
     e.preventDefault();
 
     try {
-
       const res = await api.post("/login", {
-        username: username,
-        password: password
+        username,
+        password
       });
 
-      const user = res.data.user;
+      const { user, token } = res.data;
 
-      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      // ROLE REDIRECT
-      if (user.role === "admin") {
+      window.dispatchEvent(new Event("authChange"));
 
-        navigate("/admin");
+      if (user.role === "admin") navigate("/admin");
+      else if (user.role === "organizer") navigate("/organizer");
+      else navigate("/user");
 
-      } else if (user.role === "organizer") {
-
-        navigate("/organizer");
-
-      } else {
-
-        navigate("/user-dashboard");
-
-      }
-
-      // Force UI refresh (important for navbar + routes)
-      window.location.reload();
-
-    } catch (err) {
-
-      setError("Invalid username or password");
-
+    } catch {
+      alert("Invalid credentials");
     }
-
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 pt-24">
+    <div className="min-h-screen flex justify-center items-center bg-gray-100">
 
-      <form
-        onSubmit={handleLogin}
-        className="bg-white p-10 rounded-2xl shadow-xl w-96"
-      >
+      <form onSubmit={handleLogin} className="bg-white p-8 rounded shadow w-96">
 
-        <h2 className="text-3xl font-bold mb-6 text-center">
+        <h2 className="text-2xl font-bold mb-6 text-center">
           Login
         </h2>
-
-        {error && (
-          <div className="text-red-500 text-sm mb-4 text-center">
-            {error}
-          </div>
-        )}
 
         <input
           type="text"
           placeholder="Username"
+          className="w-full border p-3 mb-4 rounded"
           value={username}
           onChange={(e)=>setUsername(e.target.value)}
-          className="w-full border px-4 py-3 rounded-lg mb-4"
-          required
         />
 
         <input
           type="password"
           placeholder="Password"
+          className="w-full border p-3 mb-2 rounded"
           value={password}
           onChange={(e)=>setPassword(e.target.value)}
-          className="w-full border px-4 py-3 rounded-lg mb-6"
-          required
         />
 
-        <button
-          type="submit"
-          className="w-full bg-black text-white py-3 rounded-full"
-        >
+        <div className="text-right mb-4">
+          <Link to="/forgot-password" className="text-blue-600 text-sm">
+            Forgot Password?
+          </Link>
+        </div>
+
+        <button className="w-full bg-black text-white py-3 rounded">
           Login
         </button>
 
-        <div className="flex justify-between mt-6 text-sm">
-
+        <p className="text-center mt-4 text-sm">
+          Don’t have an account?{" "}
           <Link to="/signup" className="text-blue-600">
-            Sign Up
+            Sign up
           </Link>
-
-          <Link to="/forgot-password" className="text-blue-600">
-            Forgot Password
-          </Link>
-
-        </div>
+        </p>
 
       </form>
-
     </div>
   );
 }

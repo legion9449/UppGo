@@ -12,14 +12,16 @@ function OrganizerAddEventPage() {
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState("");
   const [image, setImage] = useState(null);
-  const [preview, setPreview] = useState(null); // ✅ NEW
+  const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // ✅ GET USER
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setImage(file);
 
-    // ✅ Preview image
     if (file) {
       setPreview(URL.createObjectURL(file));
     }
@@ -30,6 +32,7 @@ function OrganizerAddEventPage() {
     setLoading(true);
 
     try {
+
       const formData = new FormData();
 
       formData.append("title", title);
@@ -38,6 +41,9 @@ function OrganizerAddEventPage() {
       formData.append("location", location);
       formData.append("category", category);
 
+      // ✅ IMPORTANT FIX
+      formData.append("user_id", user.id);
+
       if (image) {
         formData.append("image", image);
       }
@@ -45,17 +51,21 @@ function OrganizerAddEventPage() {
       await api.post("/events", formData);
 
       alert("✅ Event submitted for approval");
+
       navigate("/organizer");
 
     } catch (err) {
+
       console.error(err);
       alert("❌ Error creating event");
+
     }
 
     setLoading(false);
   };
 
   return (
+
     <div className="min-h-screen bg-gray-100 pt-24 pb-20">
 
       <div className="max-w-3xl mx-auto bg-white p-10 rounded-2xl shadow-lg">
@@ -113,8 +123,9 @@ function OrganizerAddEventPage() {
             className="w-full border p-3 rounded-lg"
           />
 
-          {/* ✅ IMAGE UPLOAD */}
+          {/* IMAGE */}
           <div>
+
             <input
               type="file"
               accept="image/*"
@@ -122,7 +133,6 @@ function OrganizerAddEventPage() {
               className="w-full"
             />
 
-            {/* ✅ PREVIEW */}
             {preview && (
               <img
                 src={preview}
@@ -130,6 +140,7 @@ function OrganizerAddEventPage() {
                 className="mt-4 w-full h-48 object-cover rounded-lg"
               />
             )}
+
           </div>
 
           <button
@@ -145,6 +156,7 @@ function OrganizerAddEventPage() {
       </div>
 
     </div>
+
   );
 }
 

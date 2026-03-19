@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 import Home from "./pages/Home";
 import EventsPage from "./pages/EventsPage";
@@ -33,77 +34,99 @@ function App() {
 
       <Navbar />
 
-      <Routes>
+      <div className="pt-24">
 
-        {/* PUBLIC */}
+        <Routes>
 
-        <Route path="/" element={<Home />} />
-        <Route path="/events" element={<EventsPage />} />
-        <Route path="/events/:id" element={<EventDetail />} />
+          {/* ================= PUBLIC ================= */}
 
+          <Route path="/" element={<Home />} />
+          <Route path="/events" element={<EventsPage />} />
+          <Route path="/events/:id" element={<EventDetail />} />
 
-        {/* AUTH */}
+          {/* ================= AUTH ================= */}
 
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
-
-        {/* USER */}
-
-        <Route
-          path="/user-dashboard"
-          element={<UserDashboard />}
-        />
-
-
-        {/* ORGANIZER */}
-
-        <Route
-          path="/organizer"
-          element={<OrganizerDashboard />}
-        />
-
-        <Route
-          path="/organizer/add"
-          element={<OrganizerAddEventPage />}
-        />
-
-        <Route
-          path="/organizer/edit/:id"
-          element={<OrganizerEditEventPage />}
-        />
-
-
-        {/* ADMIN */}
-
-        <Route path="/admin" element={<AdminLayout />}>
-
-          <Route index element={<AdminDashboard />} />
+          {/* ================= USER ================= */}
 
           <Route
-            path="events"
-            element={<AdminEvents />}
+            path="/user"
+            element={
+              <ProtectedRoute role="user">
+                <UserDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* ================= ORGANIZER ================= */}
+
+          <Route
+            path="/organizer"
+            element={
+              <ProtectedRoute role="organizer">
+                <OrganizerDashboard />
+              </ProtectedRoute>
+            }
           />
 
           <Route
-            path="add-event"
-            element={<AddEventPage />}
+            path="/organizer/add"
+            element={
+              <ProtectedRoute role="organizer">
+                <OrganizerAddEventPage />
+              </ProtectedRoute>
+            }
           />
 
           <Route
-            path="edit/:id"
-            element={<EditEventPage />}
+            path="/organizer/edit/:id"
+            element={
+              <ProtectedRoute role="organizer">
+                <OrganizerEditEventPage />
+              </ProtectedRoute>
+            }
           />
 
-        </Route>
+          {/* ================= ADMIN ================= */}
 
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute role="admin">
+                <AdminLayout />
+              </ProtectedRoute>
+            }
+          >
 
-        {/* 404 */}
+            <Route index element={<AdminDashboard />} />
 
-        <Route path="*" element={<NotFound />} />
+            <Route
+              path="events"
+              element={<AdminEvents />}
+            />
 
-      </Routes>
+            <Route
+              path="add-event"
+              element={<AddEventPage />}
+            />
+
+            <Route
+              path="edit/:id"
+              element={<EditEventPage />}
+            />
+
+          </Route>
+
+          {/* ================= 404 ================= */}
+
+          <Route path="*" element={<NotFound />} />
+
+        </Routes>
+
+      </div>
 
       <Footer />
 

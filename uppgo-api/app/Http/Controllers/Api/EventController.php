@@ -26,32 +26,33 @@ class EventController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'title' => 'required|string',
-            'date' => 'required|date',
-            'location' => 'required|string',
-            'category' => 'nullable|string',
-            'eventType' => 'nullable|string',
-            'description' => 'nullable|string',
-            'image' => 'nullable|image|max:2048'
-        ]);
+{
+    $validated = $request->validate([
+        'title' => 'required|string',
+        'date' => 'required|date',
+        'location' => 'required|string',
+        'category' => 'nullable|string',
+        'eventType' => 'nullable|string',
+        'description' => 'nullable|string',
+        'image' => 'nullable|image|max:2048'
+    ]);
 
-        // ✅ FIX: use public disk instead of gcs
-        if ($request->hasFile('image')) {
+    if ($request->hasFile('image')) {
 
-            $file = $request->file('image');
+        $file = $request->file('image');
 
-            $path = $file->store('events', 'public');
+        $path = $file->store('events', 'public');
 
-            $validated['image'] = url('/storage/' . $path);
-        }
-
-        $validated['user_id'] = $request->user()->id ?? null;
-        $validated['status'] = 'pending';
-
-        return Event::create($validated);
+        $validated['image'] = url('/storage/' . $path);
     }
+
+    
+    $validated['user_id'] = $request->input('user_id');
+
+    $validated['status'] = 'pending';
+
+    return Event::create($validated);
+}
 
     public function update(Request $request, Event $event)
     {
