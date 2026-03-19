@@ -50,11 +50,10 @@ return [
             'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
             'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET'),
             
-            // ✅ Fix: Visibility removed to avoid Uniform Access conflicts
+            // ✅ THE FIX: Tells the driver not to apply legacy file-level permissions
+            'visibility' => 'no_acl', 
             
             'key_file' => null,
-            
-            // ✅ Fix: Force Laravel to throw an error if the upload fails
             'throw' => true, 
         ],
 
