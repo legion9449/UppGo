@@ -35,27 +35,26 @@ class EventController extends Controller
             'eventType' => 'nullable|string',
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
-            
+
             'latitude' => 'nullable',
             'longitude' => 'nullable',
             'user_id' => 'required|integer',
         ]);
 
-        // ✅ THE ULTIMATE OVERRIDE: Force no_acl directly on the upload command
+        // ✅ Upload image to GCS
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            
-           $path = Storage::disk('gcs')->putFile('events', $file);
+
+            $path = Storage::disk('gcs')->putFile('events', $file);
 
             $validated['image'] = Storage::disk('gcs')->url($path);
         }
 
-        // ✅ SAVE GEO DATA
+        // ✅ Geo
         $validated['latitude'] = $request->input('latitude');
         $validated['longitude'] = $request->input('longitude');
 
-        // ✅ USER + STATUS
-        $validated['user_id'] = $request->input('user_id');
+        // ✅ Status
         $validated['status'] = 'pending';
 
         return Event::create($validated);
@@ -71,29 +70,27 @@ class EventController extends Controller
             'eventType' => 'nullable|string',
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
-            
+
             'latitude' => 'nullable',
             'longitude' => 'nullable',
         ]);
 
-        // ✅ IMAGE UPDATE
+        // ✅ Replace image
         if ($request->hasFile('image')) {
-            
-            // Delete the old image first
+
+            // Delete old image safely
             if ($event->image) {
-                $oldPath = str_replace(Storage::disk('gcs')->url(''), '', $event->image);
-                Storage::disk('gcs')->delete($oldPath);
+                $this->deleteGcsFile($event->image);
             }
 
-            // ✅ THE ULTIMATE OVERRIDE: Force no_acl directly on the new upload
             $file = $request->file('image');
-            $newPath = Storage::disk('gcs')->putFile('events', $file, [
-                'visibility' => 'no_acl'
-            ]);
-            $validated['image'] = Storage::disk('gcs')->url($newPath);
+
+            $path = Storage::disk('gcs')->putFile('events', $file);
+
+            $validated['image'] = Storage::disk('gcs')->url($path);
         }
 
-        // ✅ UPDATE GEO DATA
+        // ✅ Update geo
         $validated['latitude'] = $request->input('latitude');
         $validated['longitude'] = $request->input('longitude');
 
@@ -104,16 +101,33 @@ class EventController extends Controller
 
     public function destroy(Event $event)
     {
-        // ✅ DELETE IMAGE FROM GCS
+        // ✅ Delete image
         if ($event->image) {
-            $path = str_replace(Storage::disk('gcs')->url(''), '', $event->image);
-            Storage::disk('gcs')->delete($path);
+            $this->deleteGcsFile($event->image);
         }
 
         $event->delete();
 
         return response()->json([
-            'message' => 'Event and associated image deleted successfully'
+            'message' => 'Event deleted successfully'
         ]);
+    }
+
+    /**
+     * ✅ Helper: safely delete GCS file from full URL
+     */
+    private function deleteGcsFile($url)
+    {
+        try {
+            $bucketUrl = Storage::disk('gcs')->url('');
+
+            $path = str_replace($bucketUrl, '', $url);
+
+            if ($path) {
+                Storage::disk('gcs')->delete($path);
+            }
+        } catch (\Exception $e) {
+            \Log::error('GCS delete failed: ' . $e->getMessage());
+        }
     }
 }
