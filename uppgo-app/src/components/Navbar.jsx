@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 function Navbar() {
 
@@ -7,7 +7,8 @@ function Navbar() {
   const [open, setOpen] = useState(false);
 
   const navigate = useNavigate();
-  const dropdownRef = useRef(); // ✅ NEW
+  const location = useLocation(); // ✅ NEW
+  const dropdownRef = useRef();
 
   // ================= LOAD USER =================
   useEffect(() => {
@@ -26,6 +27,11 @@ function Navbar() {
     };
 
   }, []);
+
+  // ================= CLOSE ON ROUTE CHANGE =================
+  useEffect(() => {
+    setOpen(false); // ✅ THIS FIXES YOUR ISSUE
+  }, [location.pathname]);
 
   // ================= CLOSE ON OUTSIDE CLICK =================
   useEffect(() => {
@@ -49,13 +55,14 @@ function Navbar() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
+    setOpen(false); // ✅ ALSO CLOSE HERE
     navigate("/login");
   };
 
   // ================= DASHBOARD REDIRECT =================
   const goDashboard = () => {
 
-    setOpen(false);
+    setOpen(false); // already good
 
     if (!user) return;
 

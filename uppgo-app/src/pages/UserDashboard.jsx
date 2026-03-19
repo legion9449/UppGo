@@ -5,9 +5,11 @@ function UserDashboard() {
 
   const [user, setUser] = useState(null);
   const [interests, setInterests] = useState([]);
-  const [tempInterests, setTempInterests] = useState([]); // 🔥 NEW
+  const [tempInterests, setTempInterests] = useState([]);
   const [editing, setEditing] = useState(false);
+
   const [recommendations, setRecommendations] = useState([]);
+  const [favorites, setFavorites] = useState([]); // ❤️ NEW
 
   const interestOptions = [
     "Music",
@@ -34,31 +36,42 @@ function UserDashboard() {
       setInterests(userInterests);
 
       loadRecommendations(parsed.id);
+      loadFavorites(parsed.id); // ❤️ LOAD FAVORITES
 
     }
 
   }, []);
 
+  // ================= LOAD RECOMMENDATIONS =================
   const loadRecommendations = async (userId) => {
 
     try {
-
       const res = await api.get(`/recommendations/${userId}`);
       setRecommendations(res.data);
-
     } catch (err) {
       console.log(err);
     }
 
   };
 
-  // 🔥 EDIT START
+  // ================= LOAD FAVORITES =================
+  const loadFavorites = async (userId) => {
+
+    try {
+      const res = await api.get(`/favorites/${userId}`);
+      setFavorites(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+
+  };
+
+  // ================= EDIT INTERESTS =================
   const startEditing = () => {
-    setTempInterests([...interests]); // copy current
+    setTempInterests([...interests]);
     setEditing(true);
   };
 
-  // 🔥 TOGGLE (ONLY TEMP)
   const toggleInterest = (interest) => {
 
     if (tempInterests.includes(interest)) {
@@ -69,7 +82,6 @@ function UserDashboard() {
 
   };
 
-  // 🔥 SAVE
   const saveInterests = async () => {
 
     try {
@@ -78,10 +90,8 @@ function UserDashboard() {
         interests: tempInterests
       });
 
-      // ✅ update main state
       setInterests(tempInterests);
 
-      // ✅ update localStorage
       localStorage.setItem(
         "user",
         JSON.stringify(res.data.user)
@@ -93,7 +103,6 @@ function UserDashboard() {
 
       setEditing(false);
 
-      // update navbar instantly
       window.dispatchEvent(new Event("authChange"));
 
     } catch {
@@ -102,9 +111,8 @@ function UserDashboard() {
 
   };
 
-  // 🔥 CANCEL (FIX)
   const cancelEdit = () => {
-    setTempInterests([]); // discard changes
+    setTempInterests([]);
     setEditing(false);
   };
 
@@ -117,6 +125,7 @@ function UserDashboard() {
         Welcome {user.name}
       </h1>
 
+      {/* ================= PROFILE ================= */}
       <div className="bg-white shadow-xl rounded-xl p-8 mb-10">
 
         <p className="mb-4">
@@ -157,7 +166,7 @@ function UserDashboard() {
               >
                 <input
                   type="checkbox"
-                  checked={tempInterests.includes(interest)} // 🔥 FIX
+                  checked={tempInterests.includes(interest)}
                   onChange={() => toggleInterest(interest)}
                 />
                 {interest}
@@ -188,6 +197,49 @@ function UserDashboard() {
 
       </div>
 
+      {/* ================= FAVORITES ❤️ ================= */}
+      <div className="mb-12">
+
+        <h2 className="text-2xl font-bold mb-6">
+          Favorite Events
+        </h2>
+
+        {favorites.length === 0 ? (
+
+          <p>No favorite events yet.</p>
+
+        ) : (
+
+          <div className="grid md:grid-cols-2 gap-6">
+
+            {favorites.map((event) => (
+              <div
+                key={event.id}
+                className="border rounded-xl p-4 shadow hover:shadow-lg transition"
+              >
+
+                <h3 className="text-lg font-semibold">
+                  {event.title}
+                </h3>
+
+                <p className="text-gray-600">
+                  {event.date}
+                </p>
+
+                <p className="text-sm text-gray-500">
+                  {event.location}
+                </p>
+
+              </div>
+            ))}
+
+          </div>
+
+        )}
+
+      </div>
+
+      {/* ================= RECOMMENDATIONS ================= */}
       <div>
 
         <h2 className="text-2xl font-bold mb-6">
@@ -231,7 +283,6 @@ function UserDashboard() {
 
     </div>
   );
-
 }
 
 export default UserDashboard;

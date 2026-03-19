@@ -5,6 +5,8 @@ import api from "../api";
 function Events() {
 
   const [events, setEvents] = useState([]);
+  const [favorites, setFavorites] = useState([]); // ✅ NEW
+
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [eventTypeFilter, setEventTypeFilter] = useState("All");
@@ -13,10 +15,19 @@ function Events() {
   const [lastPage, setLastPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
+  const user = JSON.parse(localStorage.getItem("user")); // ✅ USER
+
   // ================= FETCH EVENTS =================
   useEffect(() => {
     fetchEvents();
   }, [page, search, categoryFilter, eventTypeFilter]);
+
+  // ================= LOAD FAVORITES =================
+  useEffect(() => {
+    if (user) {
+      loadFavorites();
+    }
+  }, []);
 
   const fetchEvents = async () => {
 
@@ -41,6 +52,42 @@ function Events() {
     }
 
     setLoading(false);
+  };
+
+  const loadFavorites = async () => {
+    try {
+      const res = await api.get(`/favorites/${user.id}`);
+      const ids = res.data.map(e => e.id);
+      setFavorites(ids);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // ================= TOGGLE FAVORITE =================
+  const toggleFavorite = async (eventId) => {
+
+    if (!user) {
+      alert("Please login first");
+      return;
+    }
+
+    try {
+
+      const res = await api.post("/favorites/toggle", {
+        user_id: user.id,
+        event_id: eventId
+      });
+
+      if (res.data.status === "added") {
+        setFavorites([...favorites, eventId]);
+      } else {
+        setFavorites(favorites.filter(id => id !== eventId));
+      }
+
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   // ================= FILTER OPTIONS =================
@@ -135,41 +182,55 @@ function Events() {
         ) : (
           <div className="grid md:grid-cols-3 gap-8">
 
-            {events.map((event) => (
+            {events.map((event) => {
 
-              <Link
-                to={`/events/${event.id}`}
-                key={event.id}
-                className="rounded-xl overflow-hidden shadow-lg group"
-              >
+              const isFavorite = favorites.includes(event.id);
 
-                {event.image && (
-                  <img
-                    src={event.image}
-                    alt={event.title}
-                    className="w-full h-60 object-cover group-hover:scale-105 transition"
-                  />
-                )}
+              return (
+                <Link
+                  to={`/events/${event.id}`}
+                  key={event.id}
+                  className="rounded-xl overflow-hidden shadow-lg group relative"
+                >
 
-                <div className="p-4">
+                  {/* ❤️ FAVORITE BUTTON */}
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleFavorite(event.id);
+                    }}
+                    className="absolute top-3 right-3 text-2xl z-10"
+                  >
+                    {isFavorite ? "❤️" : "🤍"}
+                  </button>
 
-                  <h3 className="text-xl font-bold mb-2">
-                    {event.title}
-                  </h3>
+                  {event.image && (
+                    <img
+                      src={event.image}
+                      alt={event.title}
+                      className="w-full h-60 object-cover group-hover:scale-105 transition"
+                    />
+                  )}
 
-                  <p className="text-gray-500 text-sm">
-                    {event.date}
-                  </p>
+                  <div className="p-4">
 
-                  <p className="text-gray-600 text-sm">
-                    {event.location}
-                  </p>
+                    <h3 className="text-xl font-bold mb-2">
+                      {event.title}
+                    </h3>
 
-                </div>
+                    <p className="text-gray-500 text-sm">
+                      {event.date}
+                    </p>
 
-              </Link>
+                    <p className="text-gray-600 text-sm">
+                      {event.location}
+                    </p>
 
-            ))}
+                  </div>
+
+                </Link>
+              );
+            })}
 
           </div>
         )}
@@ -204,7 +265,6 @@ function Events() {
 
     </section>
   );
-
 }
 
 export default Events;

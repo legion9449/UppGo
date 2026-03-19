@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\AuthController;
 use App\Models\Event;
 use App\Models\User;
+use App\Models\Favorite; // ✅ NEW
 use Illuminate\Support\Facades\Storage;
 
 /*
@@ -94,7 +95,7 @@ Route::put('/events/{event}/feature', function (Event $event) {
 
 /*
 |--------------------------------------------------------------------------
-| AUTH (🔥 FIXED - USE CONTROLLER)
+| AUTH
 |--------------------------------------------------------------------------
 */
 
@@ -156,6 +157,68 @@ Route::get('/recommendations/{userId}', function ($userId) {
         ->orderBy('date', 'asc')
         ->get();
 
+});
+
+/*
+|--------------------------------------------------------------------------
+| FAVORITES (❤️ NEW FEATURE)
+|--------------------------------------------------------------------------
+*/
+
+// ADD FAVORITE
+Route::post('/favorites', function (Request $request) {
+
+    return Favorite::firstOrCreate([
+        'user_id' => $request->user_id,
+        'event_id' => $request->event_id
+    ]);
+
+});
+
+// REMOVE FAVORITE
+Route::delete('/favorites', function (Request $request) {
+
+    Favorite::where('user_id', $request->user_id)
+        ->where('event_id', $request->event_id)
+        ->delete();
+
+    return response()->json([
+        'message' => 'Removed from favorites'
+    ]);
+
+});
+
+// GET USER FAVORITES
+Route::get('/favorites/{userId}', function ($userId) {
+
+    return Event::whereIn('id', function ($query) use ($userId) {
+        $query->select('event_id')
+              ->from('favorites')
+              ->where('user_id', $userId);
+    })
+    ->orderBy('date', 'desc')
+    ->get();
+
+});
+
+// 🔥 OPTIONAL: TOGGLE FAVORITE (BEST UX)
+Route::post('/favorites/toggle', function (Request $request) {
+
+    $favorite = Favorite::where('user_id', $request->user_id)
+        ->where('event_id', $request->event_id)
+        ->first();
+
+    if ($favorite) {
+        $favorite->delete();
+        return response()->json(['status' => 'removed']);
+    }
+
+    Favorite::create([
+        'user_id' => $request->user_id,
+        'event_id' => $request->event_id
+    ]);
+
+    return response()->json(['status' => 'added']);
 });
 
 /*
