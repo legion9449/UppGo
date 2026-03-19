@@ -13,23 +13,22 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users',
+            'name' => 'required|string|max:255|unique:users', // 🔥 unique name
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
-            'role' => 'required|in:user,organizer,admin'
+            'role' => 'required|in:user,organizer,admin',
+            'interests' => 'nullable'
         ]);
 
-        // ✅ HASH PASSWORD
+        // HASH PASSWORD
         $validated['password'] = Hash::make($validated['password']);
 
         $user = User::create($validated);
 
-        // 🔥 OPTIONAL: auto login after signup
+        // 🔥 AUTO LOGIN AFTER SIGNUP
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'message' => 'User created successfully',
             'user' => $user,
             'token' => $token
         ], 201);
@@ -39,24 +38,22 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'username' => 'required',
+            'username' => 'required', // 👈 this is actually "name"
             'password' => 'required'
         ]);
 
-        // ✅ FIND USER
-        $user = User::where('username', $request->username)->first();
+        // 🔥 USE NAME COLUMN
+        $user = User::where('name', $request->username)->first();
 
-        // ❌ INVALID
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
                 'message' => 'Invalid credentials'
             ], 401);
         }
 
-        // 🔥 DELETE OLD TOKENS (IMPORTANT FIX)
+        // DELETE OLD TOKENS
         $user->tokens()->delete();
 
-        // ✅ CREATE NEW TOKEN
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([

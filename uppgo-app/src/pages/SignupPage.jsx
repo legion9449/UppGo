@@ -94,6 +94,7 @@ function SignupPage() {
 
     try {
 
+      // ✅ SEND DATA (NO username)
       const res = await api.post("/signup", {
         name: form.name,
         email: form.email,
@@ -104,12 +105,14 @@ function SignupPage() {
 
       const { user, token } = res.data;
 
+      // 🔥 SAVE AUTH
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
+      // 🔥 UPDATE NAVBAR
       window.dispatchEvent(new Event("authChange"));
 
-      // ✅ ROLE-BASED REDIRECT
+      // 🔥 ROLE REDIRECT
       if (user.role === "admin") {
         navigate("/admin");
       } else if (user.role === "organizer") {
@@ -119,6 +122,7 @@ function SignupPage() {
       }
 
     } catch (err) {
+      console.error(err);
       alert("Signup failed");
     }
   };
