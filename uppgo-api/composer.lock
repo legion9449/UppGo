@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "91eef0f08b51f79ee0230d1e45aa2cd9",
+    "content-hash": "4996c7c951e947b30623307b8ba05195",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -2739,21 +2739,21 @@
         },
         {
             "name": "league/flysystem-google-cloud-storage",
-            "version": "3.0.0",
+            "version": "3.31.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/thephpleague/flysystem-google-cloud-storage.git",
-                "reference": "fe298702dbb05a0b24b0061ceee3d388242c0ef8"
+                "reference": "0e877148edb3809954559b2987da57e21f7f15a6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/thephpleague/flysystem-google-cloud-storage/zipball/fe298702dbb05a0b24b0061ceee3d388242c0ef8",
-                "reference": "fe298702dbb05a0b24b0061ceee3d388242c0ef8",
+                "url": "https://api.github.com/repos/thephpleague/flysystem-google-cloud-storage/zipball/0e877148edb3809954559b2987da57e21f7f15a6",
+                "reference": "0e877148edb3809954559b2987da57e21f7f15a6",
                 "shasum": ""
             },
             "require": {
                 "google/cloud-storage": "^1.23",
-                "league/flysystem": "^2.0.0 || ^3.0.0",
+                "league/flysystem": "^3.10.0",
                 "league/mime-type-detection": "^1.0.0",
                 "php": "^8.0.2"
             },
@@ -2781,24 +2781,9 @@
                 "google cloud storage"
             ],
             "support": {
-                "issues": "https://github.com/thephpleague/flysystem-google-cloud-storage/issues",
-                "source": "https://github.com/thephpleague/flysystem-google-cloud-storage/tree/3.0.0"
+                "source": "https://github.com/thephpleague/flysystem-google-cloud-storage/tree/3.31.0"
             },
-            "funding": [
-                {
-                    "url": "https://offset.earth/frankdejonge",
-                    "type": "custom"
-                },
-                {
-                    "url": "https://github.com/frankdejonge",
-                    "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/league/flysystem",
-                    "type": "tidelift"
-                }
-            ],
-            "time": "2022-01-13T21:23:39+00:00"
+            "time": "2026-01-23T15:30:45+00:00"
         },
         {
             "name": "league/flysystem-local",
