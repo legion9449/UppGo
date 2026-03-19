@@ -53,6 +53,7 @@ return [
 
             // ✅ IMPORTANT for Cloud Run
             'key_file' => null,
+            'throw' => true,
         ],
 
     ],
