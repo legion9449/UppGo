@@ -5,6 +5,7 @@ function UserDashboard() {
 
   const [user, setUser] = useState(null);
   const [interests, setInterests] = useState([]);
+  const [tempInterests, setTempInterests] = useState([]); // 🔥 NEW
   const [editing, setEditing] = useState(false);
   const [recommendations, setRecommendations] = useState([]);
 
@@ -43,39 +44,44 @@ function UserDashboard() {
     try {
 
       const res = await api.get(`/recommendations/${userId}`);
-
       setRecommendations(res.data);
 
     } catch (err) {
-
       console.log(err);
-
     }
 
   };
 
+  // 🔥 EDIT START
+  const startEditing = () => {
+    setTempInterests([...interests]); // copy current
+    setEditing(true);
+  };
+
+  // 🔥 TOGGLE (ONLY TEMP)
   const toggleInterest = (interest) => {
 
-    if (interests.includes(interest)) {
-
-      setInterests(interests.filter(i => i !== interest));
-
+    if (tempInterests.includes(interest)) {
+      setTempInterests(tempInterests.filter(i => i !== interest));
     } else {
-
-      setInterests([...interests, interest]);
-
+      setTempInterests([...tempInterests, interest]);
     }
 
   };
 
+  // 🔥 SAVE
   const saveInterests = async () => {
 
     try {
 
       const res = await api.put(`/user/interests/${user.id}`, {
-        interests: interests
+        interests: tempInterests
       });
 
+      // ✅ update main state
+      setInterests(tempInterests);
+
+      // ✅ update localStorage
       localStorage.setItem(
         "user",
         JSON.stringify(res.data.user)
@@ -87,12 +93,19 @@ function UserDashboard() {
 
       setEditing(false);
 
+      // update navbar instantly
+      window.dispatchEvent(new Event("authChange"));
+
     } catch {
-
       alert("Failed to update interests");
-
     }
 
+  };
+
+  // 🔥 CANCEL (FIX)
+  const cancelEdit = () => {
+    setTempInterests([]); // discard changes
+    setEditing(false);
   };
 
   if (!user) return <div className="pt-32 text-center">Loading...</div>;
@@ -119,11 +132,13 @@ function UserDashboard() {
           <div>
 
             <p className="mb-4">
-              {interests.length > 0 ? interests.join(", ") : "No interests selected"}
+              {interests.length > 0
+                ? interests.join(", ")
+                : "No interests selected"}
             </p>
 
             <button
-              onClick={()=>setEditing(true)}
+              onClick={startEditing}
               className="bg-black text-white px-4 py-2 rounded"
             >
               Edit Interests
@@ -135,15 +150,15 @@ function UserDashboard() {
 
           <div>
 
-            {interestOptions.map((interest)=>(
+            {interestOptions.map((interest) => (
               <label
                 key={interest}
                 className="flex gap-2 mb-2"
               >
                 <input
                   type="checkbox"
-                  checked={interests.includes(interest)}
-                  onChange={()=>toggleInterest(interest)}
+                  checked={tempInterests.includes(interest)} // 🔥 FIX
+                  onChange={() => toggleInterest(interest)}
                 />
                 {interest}
               </label>
@@ -159,7 +174,7 @@ function UserDashboard() {
               </button>
 
               <button
-                onClick={()=>setEditing(false)}
+                onClick={cancelEdit}
                 className="bg-gray-400 text-white px-4 py-2 rounded"
               >
                 Cancel
@@ -187,7 +202,7 @@ function UserDashboard() {
 
           <div className="grid md:grid-cols-2 gap-6">
 
-            {recommendations.map((event)=>(
+            {recommendations.map((event) => (
               <div
                 key={event.id}
                 className="border rounded-xl p-4 shadow hover:shadow-lg transition"

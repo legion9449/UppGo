@@ -9,22 +9,27 @@ use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
+    // ================= GET EVENTS (WITH PAGINATION) =================
     public function index(Request $request)
     {
         $query = Event::where('status', 'approved');
 
+        // ✅ Featured filter
         if ($request->has('featured')) {
             $query->where('featured', true);
         }
 
-        return $query->orderBy('date', 'desc')->get();
+        // ✅ Pagination (9 events per page)
+        return $query->orderBy('date', 'desc')->paginate(9);
     }
 
+    // ================= SHOW SINGLE EVENT =================
     public function show(Event $event)
     {
         return $event;
     }
 
+    // ================= CREATE EVENT =================
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -43,6 +48,7 @@ class EventController extends Controller
 
         // ✅ Upload image to GCS
         if ($request->hasFile('image')) {
+
             $file = $request->file('image');
 
             $path = Storage::disk('gcs')->putFile('events', $file);
@@ -50,16 +56,17 @@ class EventController extends Controller
             $validated['image'] = Storage::disk('gcs')->url($path);
         }
 
-        // ✅ Geo
+        // ✅ Geo data
         $validated['latitude'] = $request->input('latitude');
         $validated['longitude'] = $request->input('longitude');
 
-        // ✅ Status
+        // ✅ Default status
         $validated['status'] = 'pending';
 
         return Event::create($validated);
     }
 
+    // ================= UPDATE EVENT =================
     public function update(Request $request, Event $event)
     {
         $validated = $request->validate([
@@ -78,7 +85,7 @@ class EventController extends Controller
         // ✅ Replace image
         if ($request->hasFile('image')) {
 
-            // Delete old image safely
+            // delete old image
             if ($event->image) {
                 $this->deleteGcsFile($event->image);
             }
@@ -99,9 +106,10 @@ class EventController extends Controller
         return response()->json($event);
     }
 
+    // ================= DELETE EVENT =================
     public function destroy(Event $event)
     {
-        // ✅ Delete image
+        // delete image from GCS
         if ($event->image) {
             $this->deleteGcsFile($event->image);
         }
@@ -113,9 +121,7 @@ class EventController extends Controller
         ]);
     }
 
-    /**
-     * ✅ Helper: safely delete GCS file from full URL
-     */
+    // ================= HELPER FUNCTION =================
     private function deleteGcsFile($url)
     {
         try {
@@ -126,6 +132,7 @@ class EventController extends Controller
             if ($path) {
                 Storage::disk('gcs')->delete($path);
             }
+
         } catch (\Exception $e) {
             \Log::error('GCS delete failed: ' . $e->getMessage());
         }
