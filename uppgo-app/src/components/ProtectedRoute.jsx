@@ -1,20 +1,48 @@
 import { Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 function ProtectedRoute({ children, role }) {
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // ❌ Not logged in
+  useEffect(() => {
+
+    const checkUser = () => {
+      const stored = localStorage.getItem("user");
+
+      if (stored) {
+        setUser(JSON.parse(stored));
+      } else {
+        setUser(null);
+      }
+
+      setLoading(false);
+    };
+
+    checkUser();
+
+    // 🔥 listen for login/logout
+    window.addEventListener("authChange", checkUser);
+
+    return () => window.removeEventListener("authChange", checkUser);
+
+  }, []);
+
+  // ⏳ wait before redirect
+  if (loading) return null;
+
+  // ❌ not logged in
   if (!user) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" replace />;
   }
 
-  // ❌ Role mismatch
+  // ❌ wrong role
   if (role && user.role !== role) {
-    return <Navigate to="/" />;
+    return <Navigate to="/" replace />;
   }
 
-  // ✅ Allowed
+  // ✅ allowed
   return children;
 }
 

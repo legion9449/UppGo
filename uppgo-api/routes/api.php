@@ -3,9 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\EventController;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use App\Http\Controllers\Api\AuthController;
 use App\Models\Event;
+use App\Models\User;
 use Illuminate\Support\Facades\Storage;
 
 /*
@@ -94,49 +94,15 @@ Route::put('/events/{event}/feature', function (Event $event) {
 
 /*
 |--------------------------------------------------------------------------
-| AUTH
+| AUTH (🔥 FIXED - USE CONTROLLER)
 |--------------------------------------------------------------------------
 */
 
-Route::post('/signup', function (Request $request) {
+Route::post('/signup', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
 
-    $user = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-        'role' => $request->role,
-        'interests' => $request->interests
-    ]);
-
-    $token = $user->createToken('auth_token')->plainTextToken;
-
-    return [
-        'token' => $token,
-        'user' => $user
-    ];
-
-});
-
-Route::post('/login', function (Request $request) {
-
-    $user = User::where('name', $request->username)->first();
-
-    if (!$user || !Hash::check($request->password, $user->password)) {
-
-        return response()->json([
-            'message' => 'Invalid credentials'
-        ], 401);
-
-    }
-
-    $token = $user->createToken('authToken')->plainTextToken;
-
-    return [
-        'token' => $token,
-        'user' => $user
-    ];
-
-});
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->middleware('auth:sanctum');
 
 /*
 |--------------------------------------------------------------------------
@@ -194,7 +160,7 @@ Route::get('/recommendations/{userId}', function ($userId) {
 
 /*
 |--------------------------------------------------------------------------
-| TEST STORAGE (FIXED - NO GCS)
+| TEST STORAGE
 |--------------------------------------------------------------------------
 */
 
