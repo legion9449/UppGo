@@ -36,26 +36,28 @@ class EventController extends Controller
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
 
-            
             'latitude' => 'nullable',
             'longitude' => 'nullable',
         ]);
 
-        // IMAGE
+        // ✅ IMAGE UPLOAD TO GOOGLE CLOUD STORAGE
         if ($request->hasFile('image')) {
 
             $file = $request->file('image');
 
-            $path = $file->store('events', 'public');
+            $path = Storage::disk('gcs')->putFile('events', $file);
 
-            $validated['image'] = url('/storage/' . $path);
+            $validated['image'] =
+                'https://storage.googleapis.com/' .
+                config('filesystems.disks.gcs.bucket') .
+                '/' . $path;
         }
 
-        // ✅ SAVE GEO DATA (IMPORTANT FIX)
+        // ✅ SAVE GEO DATA
         $validated['latitude'] = $request->input('latitude');
         $validated['longitude'] = $request->input('longitude');
 
-        // USER + STATUS
+        // ✅ USER + STATUS
         $validated['user_id'] = $request->input('user_id');
         $validated['status'] = 'pending';
 
@@ -73,18 +75,21 @@ class EventController extends Controller
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
 
-            // ✅ ADD HERE ALSO
             'latitude' => 'nullable',
             'longitude' => 'nullable',
         ]);
 
+        // ✅ IMAGE UPDATE (GCS)
         if ($request->hasFile('image')) {
 
             $file = $request->file('image');
 
-            $path = $file->store('events', 'public');
+            $path = Storage::disk('gcs')->putFile('events', $file);
 
-            $validated['image'] = url('/storage/' . $path);
+            $validated['image'] =
+                'https://storage.googleapis.com/' .
+                config('filesystems.disks.gcs.bucket') .
+                '/' . $path;
         }
 
         // ✅ UPDATE GEO DATA
