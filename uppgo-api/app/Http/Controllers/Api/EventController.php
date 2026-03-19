@@ -34,23 +34,22 @@ class EventController extends Controller
             'category' => 'nullable|string',
             'eventType' => 'nullable|string',
             'description' => 'nullable|string',
-            'image' => 'nullable|image|max:2048',
-
+            'image' => 'nullable|image|max:2048', // Expects an actual file, max 2MB
+            
             'latitude' => 'nullable',
             'longitude' => 'nullable',
+            'user_id' => 'required|integer', // Ensure user_id is validated
         ]);
 
         // ✅ IMAGE UPLOAD TO GOOGLE CLOUD STORAGE
         if ($request->hasFile('image')) {
-
             $file = $request->file('image');
+            
+            // Upload the file to the 'events' folder and ensure it is public
+            $path = Storage::disk('gcs')->putFile('events', $file, 'public');
 
-            $path = Storage::disk('gcs')->putFile('events', $file);
-
-            $validated['image'] =
-                'https://storage.googleapis.com/' .
-                config('filesystems.disks.gcs.bucket') .
-                '/' . $path;
+            // Automatically generate the clean public URL
+            $validated['image'] = Storage::disk('gcs')->url($path);
         }
 
         // ✅ SAVE GEO DATA
@@ -74,22 +73,25 @@ class EventController extends Controller
             'eventType' => 'nullable|string',
             'description' => 'nullable|string',
             'image' => 'nullable|image|max:2048',
-
+            
             'latitude' => 'nullable',
             'longitude' => 'nullable',
         ]);
 
         // ✅ IMAGE UPDATE (GCS)
         if ($request->hasFile('image')) {
+            
+            // 1. Delete the old image first to prevent storage bloat
+            if ($event->image) {
+                // Strip the base URL to get just the path (e.g., "events/filename.jpg")
+                $oldPath = str_replace(Storage::disk('gcs')->url(''), '', $event->image);
+                Storage::disk('gcs')->delete($oldPath);
+            }
 
+            // 2. Upload the new image
             $file = $request->file('image');
-
-            $path = Storage::disk('gcs')->putFile('events', $file);
-
-            $validated['image'] =
-                'https://storage.googleapis.com/' .
-                config('filesystems.disks.gcs.bucket') .
-                '/' . $path;
+            $newPath = Storage::disk('gcs')->putFile('events', $file, 'public');
+            $validated['image'] = Storage::disk('gcs')->url($newPath);
         }
 
         // ✅ UPDATE GEO DATA
@@ -103,10 +105,16 @@ class EventController extends Controller
 
     public function destroy(Event $event)
     {
+        // ✅ DELETE ORPHANED IMAGE FROM GCS
+        if ($event->image) {
+            $path = str_replace(Storage::disk('gcs')->url(''), '', $event->image);
+            Storage::disk('gcs')->delete($path);
+        }
+
         $event->delete();
 
         return response()->json([
-            'message' => 'Event deleted'
+            'message' => 'Event and associated image deleted successfully'
         ]);
     }
 }
