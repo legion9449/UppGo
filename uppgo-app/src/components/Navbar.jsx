@@ -1,147 +1,119 @@
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 function Navbar() {
-
-  const navigate = useNavigate();
-  const location = useLocation();
 
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false);
 
-  const dropdownRef = useRef();
+  const navigate = useNavigate();
+  const dropdownRef = useRef(); // ✅ NEW
 
-  // ✅ Load user initially
-  useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("user"));
-    setUser(stored);
-  }, []);
-
-  // ✅ Listen for login/logout changes
+  // ================= LOAD USER =================
   useEffect(() => {
 
-    const updateUser = () => {
-      const stored = JSON.parse(localStorage.getItem("user"));
-      setUser(stored);
+    const loadUser = () => {
+      const stored = localStorage.getItem("user");
+      setUser(stored ? JSON.parse(stored) : null);
     };
 
-    window.addEventListener("authChange", updateUser);
+    loadUser();
 
-    return () => window.removeEventListener("authChange", updateUser);
+    window.addEventListener("authChange", loadUser);
+
+    return () => {
+      window.removeEventListener("authChange", loadUser);
+    };
 
   }, []);
 
-  // ✅ Close dropdown when route changes
-  useEffect(() => {
-    setOpen(false);
-  }, [location]);
-
-  // ✅ Close dropdown when clicking outside
+  // ================= CLOSE ON OUTSIDE CLICK =================
   useEffect(() => {
 
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setOpen(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
 
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
 
   }, []);
 
+  // ================= LOGOUT =================
   const handleLogout = () => {
-    localStorage.removeItem("user");
     localStorage.removeItem("token");
-
-    window.dispatchEvent(new Event("authChange"));
-
+    localStorage.removeItem("user");
+    setUser(null);
     navigate("/login");
+  };
+
+  // ================= DASHBOARD REDIRECT =================
+  const goDashboard = () => {
+
+    setOpen(false);
+
+    if (!user) return;
+
+    if (user.role === "admin") navigate("/admin");
+    else if (user.role === "organizer") navigate("/organizer");
+    else navigate("/user");
   };
 
   return (
 
-    <nav className="fixed top-0 w-full bg-black text-white z-50 shadow-lg">
+    <nav className="fixed top-0 left-0 w-full bg-black text-white px-8 py-5 flex justify-between items-center z-50">
 
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-8 py-5">
+      <Link to="/" className="text-2xl font-bold">
+        UppGo
+      </Link>
 
-        {/* LOGO */}
-        <Link to="/" className="text-2xl font-bold">
-          UppGo
-        </Link>
+      <div className="flex items-center gap-6">
 
-        {/* RIGHT SIDE */}
-        <div className="flex items-center gap-6">
+        <Link to="/events">Events</Link>
 
-          {!user ? (
+        {!user ? (
 
-            <Link to="/login" className="hover:underline">
-              Login
-            </Link>
+          <Link to="/login">Login</Link>
 
-          ) : (
+        ) : (
 
-            <div className="relative" ref={dropdownRef}>
+          <div className="relative" ref={dropdownRef}>
 
-              {/* USER BUTTON */}
-              <button
-                onClick={() => setOpen(!open)}
-                className="font-semibold hover:underline"
-              >
-                {user.name}
-              </button>
+            <button
+              onClick={() => setOpen(!open)}
+              className="font-semibold"
+            >
+              {user.name}
+            </button>
 
-              {/* DROPDOWN */}
-              {open && (
-                <div className="absolute right-0 mt-3 w-52 bg-white text-black rounded-xl shadow-lg overflow-hidden">
+            {open && (
+              <div className="absolute right-0 mt-3 bg-white text-black rounded shadow w-48">
 
-                  {/* ADMIN */}
-                  {user.role === "admin" && (
-                    <button
-                      onClick={() => navigate("/admin")}
-                      className="w-full text-left px-4 py-3 hover:bg-gray-100"
-                    >
-                      Admin Dashboard
-                    </button>
-                  )}
+                <button
+                  onClick={goDashboard}
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                >
+                  Dashboard
+                </button>
 
-                  {/* ORGANIZER */}
-                  {user.role === "organizer" && (
-                    <button
-                      onClick={() => navigate("/organizer")}
-                      className="w-full text-left px-4 py-3 hover:bg-gray-100"
-                    >
-                      Organizer Dashboard
-                    </button>
-                  )}
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                >
+                  Logout
+                </button>
 
-                  {/* USER */}
-                  {user.role === "user" && (
-                    <button
-                      onClick={() => navigate("/user-dashboard")}
-                      className="w-full text-left px-4 py-3 hover:bg-gray-100"
-                    >
-                      My Profile
-                    </button>
-                  )}
+              </div>
+            )}
 
-                  {/* LOGOUT */}
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-3 text-red-600 hover:bg-red-100"
-                  >
-                    Logout
-                  </button>
+          </div>
 
-                </div>
-              )}
-
-            </div>
-
-          )}
-
-        </div>
+        )}
 
       </div>
 

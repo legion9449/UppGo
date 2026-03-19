@@ -20,6 +20,7 @@ function SignupPage() {
 
   const categories = ["Music", "Sports", "Food", "Culture", "Nature"];
 
+  // ✅ HANDLE INPUT CHANGE + REAL-TIME VALIDATION
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -28,12 +29,45 @@ function SignupPage() {
       [name]: value
     });
 
+    let error = "";
+
+    if (name === "name" && !value) {
+      error = "Username is required";
+    }
+
+    if (name === "email") {
+      if (!value) {
+        error = "Email is required";
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        error = "Enter a valid email address";
+      }
+    }
+
+    if (name === "password") {
+      if (!value) {
+        error = "Password is required";
+      } else if (
+        !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(value)
+      ) {
+        error = "Weak password";
+      }
+    }
+
+    if (name === "confirmPassword") {
+      if (!value) {
+        error = "Confirm your password";
+      } else if (value !== form.password) {
+        error = "Passwords do not match";
+      }
+    }
+
     setErrors({
       ...errors,
-      [name]: ""
+      [name]: error
     });
   };
 
+  // ✅ CHECKBOX HANDLER
   const handleCheckbox = (category) => {
 
     let updated = [...form.interests];
@@ -55,15 +89,25 @@ function SignupPage() {
     });
   };
 
-  // 🔐 VALIDATION
+  // ✅ FINAL VALIDATION BEFORE SUBMIT
   const validate = () => {
 
     let newErrors = {};
 
-    if (!form.name) newErrors.name = "Name is required";
-    if (!form.email) newErrors.email = "Email is required";
+    if (!form.name) newErrors.name = "Username is required";
+
+    if (!form.email) {
+      newErrors.email = "Email is required";
+    } else if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)
+    ) {
+      newErrors.email = "Enter a valid email address";
+    }
+
     if (!form.role) newErrors.role = "Select account type";
-    if (form.interests.length === 0) newErrors.interests = "Select at least one";
+
+    if (form.interests.length === 0)
+      newErrors.interests = "Select at least one";
 
     if (!form.password) {
       newErrors.password = "Password is required";
@@ -82,6 +126,7 @@ function SignupPage() {
     return newErrors;
   };
 
+  // ✅ SUBMIT
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -94,7 +139,6 @@ function SignupPage() {
 
     try {
 
-      // ✅ SEND DATA (NO username)
       const res = await api.post("/signup", {
         name: form.name,
         email: form.email,
@@ -105,14 +149,13 @@ function SignupPage() {
 
       const { user, token } = res.data;
 
-      // 🔥 SAVE AUTH
+      // SAVE AUTH
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      // 🔥 UPDATE NAVBAR
       window.dispatchEvent(new Event("authChange"));
 
-      // 🔥 ROLE REDIRECT
+      // ROLE REDIRECT
       if (user.role === "admin") {
         navigate("/admin");
       } else if (user.role === "organizer") {
@@ -122,8 +165,16 @@ function SignupPage() {
       }
 
     } catch (err) {
-      console.error(err);
-      alert("Signup failed");
+
+      // 🔥 BACKEND ERROR HANDLING
+      if (err.response?.data?.errors) {
+        setErrors(err.response.data.errors);
+      } else if (err.response?.data?.message) {
+        alert(err.response.data.message);
+      } else {
+        alert("Signup failed");
+      }
+
     }
   };
 
@@ -144,10 +195,10 @@ function SignupPage() {
         <input
           type="text"
           name="name"
-          placeholder="Name"
+          placeholder="Username"
           className={`w-full p-3 rounded mb-2 border ${
             errors.name ? "border-red-500" : "border-gray-300"
-          } focus:outline-none focus:ring-2 focus:ring-black`}
+          }`}
           value={form.name}
           onChange={handleChange}
         />
@@ -158,9 +209,10 @@ function SignupPage() {
           type="email"
           name="email"
           placeholder="Email"
+          required
           className={`w-full p-3 rounded mb-2 border ${
             errors.email ? "border-red-500" : "border-gray-300"
-          } focus:outline-none focus:ring-2 focus:ring-black`}
+          }`}
           value={form.email}
           onChange={handleChange}
         />

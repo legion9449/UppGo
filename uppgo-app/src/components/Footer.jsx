@@ -1,4 +1,6 @@
+import { Link } from "react-router-dom";
 import logoFull from "../assets/logo-full.png";
+
 function Footer() {
   return (
     <footer className="bg-black text-white pt-16 pb-8">
@@ -10,9 +12,9 @@ function Footer() {
           {/* Brand */}
           <div>
             <img
-            src={logoFull}
-            alt="UppGo"
-            className="h-24 object-contain mb-6"
+              src={logoFull}
+              alt="UppGo"
+              className="h-24 object-contain mb-6"
             />
             <p className="text-gray-400">
               Discover events, culture, food, and experiences
@@ -24,7 +26,11 @@ function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Explore</h3>
             <ul className="space-y-2 text-gray-400">
-              <li className="hover:text-white cursor-pointer">Events</li>
+              <li>
+                <Link to="/events" className="hover:text-white">
+                  Events
+                </Link>
+              </li>
               <li className="hover:text-white cursor-pointer">Food & Drink</li>
               <li className="hover:text-white cursor-pointer">Nature</li>
               <li className="hover:text-white cursor-pointer">Stay</li>
@@ -35,10 +41,31 @@ function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Information</h3>
             <ul className="space-y-2 text-gray-400">
-              <li className="hover:text-white cursor-pointer">About</li>
-              <li className="hover:text-white cursor-pointer">Contact</li>
-              <li className="hover:text-white cursor-pointer">Privacy Policy</li>
-              <li className="hover:text-white cursor-pointer">Terms</li>
+
+              <li>
+                <Link to="/about" className="hover:text-white">
+                  About
+                </Link>
+              </li>
+
+              <li>
+                <a href="mailto:info@uppgo.com" className="hover:text-white">
+                  Contact
+                </a>
+              </li>
+
+              <li>
+                <Link to="/privacy" className="hover:text-white">
+                  Privacy Policy
+                </Link>
+              </li>
+
+              <li>
+                <Link to="/terms" className="hover:text-white">
+                  Terms & Conditions
+                </Link>
+              </li>
+
             </ul>
           </div>
 

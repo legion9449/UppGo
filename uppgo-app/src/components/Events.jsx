@@ -13,12 +13,7 @@ function Events() {
   const [lastPage, setLastPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  const isFiltering =
-    search !== "" ||
-    categoryFilter !== "All" ||
-    eventTypeFilter !== "All";
-
-  // ================= FETCH =================
+  // ================= FETCH EVENTS =================
   useEffect(() => {
     fetchEvents();
   }, [page, search, categoryFilter, eventTypeFilter]);
@@ -29,23 +24,17 @@ function Events() {
 
     try {
 
-      // 🔥 IF FILTERING → GET ALL EVENTS
-      if (isFiltering) {
+      const res = await api.get("/events", {
+        params: {
+          page: page,
+          search: search,
+          category: categoryFilter,
+          eventType: eventTypeFilter
+        }
+      });
 
-        const res = await api.get("/events");
-
-        setEvents(res.data.data || res.data);
-        setLastPage(1);
-
-      } else {
-
-        // ✅ NORMAL PAGINATION
-        const res = await api.get(`/events?page=${page}`);
-
-        setEvents(res.data.data);
-        setLastPage(res.data.last_page);
-
-      }
+      setEvents(res.data.data);
+      setLastPage(res.data.last_page);
 
     } catch (err) {
       console.error(err);
@@ -54,36 +43,37 @@ function Events() {
     setLoading(false);
   };
 
-  // ================= FILTER =================
-  const categories = ["All", "Music", "Food", "Nature", "Sports", "Culture"];
-  const eventTypes = ["All", "Nations", "Non-Nations"];
+  // ================= FILTER OPTIONS =================
+  const categories = [
+    "All",
+    "Music",
+    "Food",
+    "Nature",
+    "Sports",
+    "Culture"
+  ];
 
-  const filteredEvents = events.filter((event) => {
-
-    const matchesSearch =
-      event.title.toLowerCase().includes(search.toLowerCase()) ||
-      event.location.toLowerCase().includes(search.toLowerCase());
-
-    const matchesCategory =
-      categoryFilter === "All" ||
-      event.category === categoryFilter;
-
-    const matchesType =
-      eventTypeFilter === "All" ||
-      (event.eventType || "Non-Nations") === eventTypeFilter;
-
-    return matchesSearch && matchesCategory && matchesType;
-
-  });
+  const eventTypes = [
+    "All",
+    "Nations",
+    "Non-Nations"
+  ];
 
   return (
     <section className="py-20">
 
       <div className="max-w-7xl mx-auto px-6">
 
-        <h2 className="text-4xl font-bold mb-6">
-          Upcoming Events
-        </h2>
+        {/* HEADER */}
+        <div className="mb-10">
+          <h2 className="text-4xl font-bold mb-3">
+            Upcoming Events
+          </h2>
+
+          <p className="text-gray-600 max-w-2xl">
+            Discover events happening in Uppsala.
+          </p>
+        </div>
 
         {/* SEARCH */}
         <input
@@ -91,13 +81,13 @@ function Events() {
           placeholder="Search events..."
           value={search}
           onChange={(e) => {
-            setPage(1); // reset page
+            setPage(1);
             setSearch(e.target.value);
           }}
           className="w-full border p-3 mb-6 rounded"
         />
 
-        {/* CATEGORY */}
+        {/* CATEGORY FILTER */}
         <div className="flex flex-wrap gap-3 mb-6">
           {categories.map((cat) => (
             <button
@@ -117,7 +107,7 @@ function Events() {
           ))}
         </div>
 
-        {/* TYPE */}
+        {/* EVENT TYPE FILTER */}
         <div className="mb-10">
           <select
             value={eventTypeFilter}
@@ -128,18 +118,25 @@ function Events() {
             className="border p-3 rounded"
           >
             {eventTypes.map((type) => (
-              <option key={type}>{type}</option>
+              <option key={type}>
+                {type}
+              </option>
             ))}
           </select>
         </div>
 
-        {/* EVENTS */}
+        {/* EVENTS GRID */}
         {loading ? (
           <p className="text-center">Loading...</p>
+        ) : events.length === 0 ? (
+          <p className="text-center text-gray-500">
+            No events found
+          </p>
         ) : (
           <div className="grid md:grid-cols-3 gap-8">
 
-            {filteredEvents.map((event) => (
+            {events.map((event) => (
+
               <Link
                 to={`/events/${event.id}`}
                 key={event.id}
@@ -155,6 +152,7 @@ function Events() {
                 )}
 
                 <div className="p-4">
+
                   <h3 className="text-xl font-bold mb-2">
                     {event.title}
                   </h3>
@@ -166,45 +164,47 @@ function Events() {
                   <p className="text-gray-600 text-sm">
                     {event.location}
                   </p>
+
                 </div>
 
               </Link>
+
             ))}
 
           </div>
         )}
 
-        {/* PAGINATION (ONLY IF NOT FILTERING) */}
-        {!isFiltering && (
-          <div className="flex justify-center gap-4 mt-10">
+        {/* ================= PAGINATION ================= */}
 
-            <button
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-              className="px-5 py-2 border rounded disabled:opacity-50"
-            >
-              Prev
-            </button>
+        <div className="flex justify-center gap-4 mt-10">
 
-            <span>
-              Page {page} of {lastPage}
-            </span>
+          <button
+            disabled={page === 1}
+            onClick={() => setPage(page - 1)}
+            className="px-5 py-2 border rounded disabled:opacity-50"
+          >
+            Prev
+          </button>
 
-            <button
-              disabled={page === lastPage}
-              onClick={() => setPage(page + 1)}
-              className="px-5 py-2 border rounded disabled:opacity-50"
-            >
-              Next
-            </button>
+          <span className="flex items-center">
+            Page {page} of {lastPage}
+          </span>
 
-          </div>
-        )}
+          <button
+            disabled={page === lastPage}
+            onClick={() => setPage(page + 1)}
+            className="px-5 py-2 border rounded disabled:opacity-50"
+          >
+            Next
+          </button>
+
+        </div>
 
       </div>
 
     </section>
   );
+
 }
 
 export default Events;

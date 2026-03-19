@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ScrollToTop from "./components/ScrollToTop"; // ✅ IMPORTANT
 
 import Home from "./pages/Home";
 import EventsPage from "./pages/EventsPage";
@@ -24,13 +25,18 @@ import AdminEvents from "./pages/AdminEvents";
 import AddEventPage from "./pages/AddEventPage";
 import EditEventPage from "./pages/EditEventPage";
 
+import About from "./pages/About";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+
 import NotFound from "./pages/NotFound";
 
 function App() {
-
   return (
-
     <BrowserRouter>
+
+      {/* ✅ SCROLL FIX */}
+      <ScrollToTop />
 
       <Navbar />
 
@@ -39,19 +45,19 @@ function App() {
         <Routes>
 
           {/* ================= PUBLIC ================= */}
-
           <Route path="/" element={<Home />} />
           <Route path="/events" element={<EventsPage />} />
           <Route path="/events/:id" element={<EventDetail />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
 
           {/* ================= AUTH ================= */}
-
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* ================= USER ================= */}
-
           <Route
             path="/user"
             element={
@@ -62,7 +68,6 @@ function App() {
           />
 
           {/* ================= ORGANIZER ================= */}
-
           <Route
             path="/organizer"
             element={
@@ -91,7 +96,6 @@ function App() {
           />
 
           {/* ================= ADMIN ================= */}
-
           <Route
             path="/admin"
             element={
@@ -100,28 +104,13 @@ function App() {
               </ProtectedRoute>
             }
           >
-
             <Route index element={<AdminDashboard />} />
-
-            <Route
-              path="events"
-              element={<AdminEvents />}
-            />
-
-            <Route
-              path="add-event"
-              element={<AddEventPage />}
-            />
-
-            <Route
-              path="edit/:id"
-              element={<EditEventPage />}
-            />
-
+            <Route path="events" element={<AdminEvents />} />
+            <Route path="add-event" element={<AddEventPage />} />
+            <Route path="edit/:id" element={<EditEventPage />} />
           </Route>
 
           {/* ================= 404 ================= */}
-
           <Route path="*" element={<NotFound />} />
 
         </Routes>
@@ -131,9 +120,7 @@ function App() {
       <Footer />
 
     </BrowserRouter>
-
   );
-
 }
 
 export default App;
