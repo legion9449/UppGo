@@ -41,11 +41,13 @@ class EventController extends Controller
             'user_id' => 'required|integer',
         ]);
 
-        // ✅ IMAGE UPLOAD TO GCS (No ACL parameters)
+        // ✅ THE ULTIMATE OVERRIDE: Force no_acl directly on the upload command
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             
-            $path = Storage::disk('gcs')->putFile('events', $file);
+            $path = Storage::disk('gcs')->putFile('events', $file, [
+                'visibility' => 'no_acl'
+            ]);
 
             $validated['image'] = Storage::disk('gcs')->url($path);
         }
@@ -76,7 +78,7 @@ class EventController extends Controller
             'longitude' => 'nullable',
         ]);
 
-        // ✅ IMAGE UPDATE (GCS)
+        // ✅ IMAGE UPDATE
         if ($request->hasFile('image')) {
             
             // Delete the old image first
@@ -85,9 +87,11 @@ class EventController extends Controller
                 Storage::disk('gcs')->delete($oldPath);
             }
 
-            // Upload the new image (No ACL parameters)
+            // ✅ THE ULTIMATE OVERRIDE: Force no_acl directly on the new upload
             $file = $request->file('image');
-            $newPath = Storage::disk('gcs')->putFile('events', $file);
+            $newPath = Storage::disk('gcs')->putFile('events', $file, [
+                'visibility' => 'no_acl'
+            ]);
             $validated['image'] = Storage::disk('gcs')->url($newPath);
         }
 
