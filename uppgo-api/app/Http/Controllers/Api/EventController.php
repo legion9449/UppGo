@@ -9,17 +9,35 @@ use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
-    // ================= GET EVENTS (WITH PAGINATION) =================
+    // ================= GET EVENTS =================
     public function index(Request $request)
     {
         $query = Event::where('status', 'approved');
 
-        // ✅ Featured filter
+        // ✅ FEATURED FILTER
         if ($request->has('featured')) {
             $query->where('featured', true);
         }
 
-        // ✅ Pagination (9 events per page)
+        // ✅ SEARCH (title + location)
+        if ($request->has('search') && $request->search != '') {
+            $query->where(function ($q) use ($request) {
+                $q->where('title', 'like', '%' . $request->search . '%')
+                  ->orWhere('location', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        // ✅ CATEGORY FILTER
+        if ($request->has('category') && $request->category !== 'All') {
+            $query->where('category', $request->category);
+        }
+
+        // ✅ EVENT TYPE FILTER
+        if ($request->has('eventType') && $request->eventType !== 'All') {
+            $query->where('eventType', $request->eventType);
+        }
+
+        // ✅ PAGINATION (IMPORTANT)
         return $query->orderBy('date', 'desc')->paginate(9);
     }
 
@@ -46,7 +64,7 @@ class EventController extends Controller
             'user_id' => 'required|integer',
         ]);
 
-        // ✅ Upload image to GCS
+        // ✅ IMAGE UPLOAD TO GCS
         if ($request->hasFile('image')) {
 
             $file = $request->file('image');
@@ -56,11 +74,11 @@ class EventController extends Controller
             $validated['image'] = Storage::disk('gcs')->url($path);
         }
 
-        // ✅ Geo data
+        // ✅ GEO DATA
         $validated['latitude'] = $request->input('latitude');
         $validated['longitude'] = $request->input('longitude');
 
-        // ✅ Default status
+        // ✅ DEFAULT STATUS
         $validated['status'] = 'pending';
 
         return Event::create($validated);
@@ -82,7 +100,7 @@ class EventController extends Controller
             'longitude' => 'nullable',
         ]);
 
-        // ✅ Replace image
+        // ✅ IMAGE UPDATE
         if ($request->hasFile('image')) {
 
             // delete old image
@@ -97,7 +115,7 @@ class EventController extends Controller
             $validated['image'] = Storage::disk('gcs')->url($path);
         }
 
-        // ✅ Update geo
+        // ✅ UPDATE GEO
         $validated['latitude'] = $request->input('latitude');
         $validated['longitude'] = $request->input('longitude');
 
@@ -109,7 +127,7 @@ class EventController extends Controller
     // ================= DELETE EVENT =================
     public function destroy(Event $event)
     {
-        // delete image from GCS
+        // delete image
         if ($event->image) {
             $this->deleteGcsFile($event->image);
         }
@@ -121,7 +139,7 @@ class EventController extends Controller
         ]);
     }
 
-    // ================= HELPER FUNCTION =================
+    // ================= HELPER =================
     private function deleteGcsFile($url)
     {
         try {
