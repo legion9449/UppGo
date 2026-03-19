@@ -26,33 +26,41 @@ class EventController extends Controller
     }
 
     public function store(Request $request)
-{
-    $validated = $request->validate([
-        'title' => 'required|string',
-        'date' => 'required|date',
-        'location' => 'required|string',
-        'category' => 'nullable|string',
-        'eventType' => 'nullable|string',
-        'description' => 'nullable|string',
-        'image' => 'nullable|image|max:2048'
-    ]);
+    {
+        $validated = $request->validate([
+            'title' => 'required|string',
+            'date' => 'required|date',
+            'location' => 'required|string',
+            'category' => 'nullable|string',
+            'eventType' => 'nullable|string',
+            'description' => 'nullable|string',
+            'image' => 'nullable|image|max:2048',
 
-    if ($request->hasFile('image')) {
+            
+            'latitude' => 'nullable',
+            'longitude' => 'nullable',
+        ]);
 
-        $file = $request->file('image');
+        // IMAGE
+        if ($request->hasFile('image')) {
 
-        $path = $file->store('events', 'public');
+            $file = $request->file('image');
 
-        $validated['image'] = url('/storage/' . $path);
+            $path = $file->store('events', 'public');
+
+            $validated['image'] = url('/storage/' . $path);
+        }
+
+        // ✅ SAVE GEO DATA (IMPORTANT FIX)
+        $validated['latitude'] = $request->input('latitude');
+        $validated['longitude'] = $request->input('longitude');
+
+        // USER + STATUS
+        $validated['user_id'] = $request->input('user_id');
+        $validated['status'] = 'pending';
+
+        return Event::create($validated);
     }
-
-    
-    $validated['user_id'] = $request->input('user_id');
-
-    $validated['status'] = 'pending';
-
-    return Event::create($validated);
-}
 
     public function update(Request $request, Event $event)
     {
@@ -63,10 +71,13 @@ class EventController extends Controller
             'category' => 'nullable|string',
             'eventType' => 'nullable|string',
             'description' => 'nullable|string',
-            'image' => 'nullable|image|max:2048'
+            'image' => 'nullable|image|max:2048',
+
+            // ✅ ADD HERE ALSO
+            'latitude' => 'nullable',
+            'longitude' => 'nullable',
         ]);
 
-        // ✅ FIX: use public disk instead of gcs
         if ($request->hasFile('image')) {
 
             $file = $request->file('image');
@@ -75,6 +86,10 @@ class EventController extends Controller
 
             $validated['image'] = url('/storage/' . $path);
         }
+
+        // ✅ UPDATE GEO DATA
+        $validated['latitude'] = $request->input('latitude');
+        $validated['longitude'] = $request->input('longitude');
 
         $event->update($validated);
 

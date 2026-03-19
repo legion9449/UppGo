@@ -6,18 +6,32 @@ function OrganizerAddEventPage() {
 
   const navigate = useNavigate();
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [date, setDate] = useState("");
-  const [location, setLocation] = useState("");
-  const [category, setCategory] = useState("");
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  const [form, setForm] = useState({
+    title: "",
+    date: "",
+    location: "",
+    category: "",
+    eventType: "Non-Nations",
+    description: ""
+  });
+
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // ✅ GET USER
-  const user = JSON.parse(localStorage.getItem("user"));
+  // HANDLE INPUT
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
+    setForm({
+      ...form,
+      [name]: value
+    });
+  };
+
+  // IMAGE PREVIEW
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setImage(file);
@@ -27,23 +41,66 @@ function OrganizerAddEventPage() {
     }
   };
 
+  // 🌍 GEOLOCATION FUNCTION (AUTO LAT/LNG)
+  const geocodeAddress = async (address) => {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`
+      );
+
+      const data = await res.json();
+
+      if (data && data.length > 0) {
+        return {
+          latitude: data[0].lat,
+          longitude: data[0].lon
+        };
+      }
+
+      return null;
+
+    } catch (err) {
+      console.error("Geocode error:", err);
+      return null;
+    }
+  };
+
+  // SUBMIT
   const handleSubmit = async (e) => {
+
     e.preventDefault();
     setLoading(true);
 
     try {
 
+      let coords = await geocodeAddress(form.location);
+
+      // 🔥 fallback (IMPORTANT)
+      if (!coords) {
+        alert("Location not found, using default (Uppsala)");
+        coords = {
+          latitude: 59.8586,
+          longitude: 17.6389
+        };
+      }
+
       const formData = new FormData();
 
-      formData.append("title", title);
-      formData.append("description", description);
-      formData.append("date", date);
-      formData.append("location", location);
-      formData.append("category", category);
+      formData.append("title", form.title);
+      formData.append("date", form.date);
+      formData.append("location", form.location);
+      formData.append("category", form.category);
+      formData.append("eventType", form.eventType);
+      formData.append("description", form.description);
 
-      // ✅ IMPORTANT FIX
+      // ✅ AUTO GEO DATA
+      formData.append("latitude", coords.latitude);
+      formData.append("longitude", coords.longitude);
+
+      // ✅ USER LINK
       formData.append("user_id", user.id);
 
+      // ✅ IMAGE
       if (image) {
         formData.append("image", image);
       }
@@ -76,51 +133,57 @@ function OrganizerAddEventPage() {
 
         <form onSubmit={handleSubmit} className="grid gap-5">
 
+          {/* TITLE */}
           <input
-            type="text"
+            name="title"
             placeholder="Event Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full border p-3 rounded-lg"
+            onChange={handleChange}
+            className="w-full border p-3 rounded"
             required
           />
 
-          <textarea
-            placeholder="Description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            className="w-full border p-3 rounded-lg"
-            rows="4"
-            required
-          />
-
-          <div className="grid md:grid-cols-2 gap-4">
-
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full border p-3 rounded-lg"
-              required
-            />
-
-            <input
-              type="text"
-              placeholder="Location"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="w-full border p-3 rounded-lg"
-              required
-            />
-
-          </div>
-
+          {/* DATE */}
           <input
-            type="text"
+            type="date"
+            name="date"
+            onChange={handleChange}
+            className="w-full border p-3 rounded"
+            required
+          />
+
+          {/* LOCATION */}
+          <input
+            name="location"
+            placeholder="Location (e.g. Uppsala Castle)"
+            onChange={handleChange}
+            className="w-full border p-3 rounded"
+            required
+          />
+
+          {/* CATEGORY */}
+          <input
+            name="category"
             placeholder="Category"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full border p-3 rounded-lg"
+            onChange={handleChange}
+            className="w-full border p-3 rounded"
+          />
+
+          {/* EVENT TYPE */}
+          <select
+            name="eventType"
+            onChange={handleChange}
+            className="w-full border p-3 rounded"
+          >
+            <option value="Nations">Nations</option>
+            <option value="Non-Nations">Non-Nations</option>
+          </select>
+
+          {/* DESCRIPTION */}
+          <textarea
+            name="description"
+            placeholder="Description"
+            onChange={handleChange}
+            className="w-full border p-3 rounded"
           />
 
           {/* IMAGE */}
@@ -130,21 +193,20 @@ function OrganizerAddEventPage() {
               type="file"
               accept="image/*"
               onChange={handleImageChange}
-              className="w-full"
             />
 
             {preview && (
               <img
                 src={preview}
                 alt="Preview"
-                className="mt-4 w-full h-48 object-cover rounded-lg"
+                className="mt-4 w-full h-48 object-cover rounded"
               />
             )}
 
           </div>
 
+          {/* BUTTON */}
           <button
-            type="submit"
             disabled={loading}
             className="bg-black text-white py-3 rounded-full hover:opacity-90"
           >
