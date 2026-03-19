@@ -41,8 +41,7 @@ class EventController extends Controller
             'user_id' => 'required|integer',
         ]);
 
-        // ✅ IMAGE UPLOAD TO GCS 
-        // (Fix: Removed 'public' parameter to respect Uniform Bucket Access)
+        // ✅ IMAGE UPLOAD TO GCS (No ACL parameters)
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             
@@ -80,14 +79,13 @@ class EventController extends Controller
         // ✅ IMAGE UPDATE (GCS)
         if ($request->hasFile('image')) {
             
-            // Delete the old image first to prevent storage bloat
+            // Delete the old image first
             if ($event->image) {
                 $oldPath = str_replace(Storage::disk('gcs')->url(''), '', $event->image);
                 Storage::disk('gcs')->delete($oldPath);
             }
 
-            // Upload the new image 
-            // (Fix: Removed 'public' parameter)
+            // Upload the new image (No ACL parameters)
             $file = $request->file('image');
             $newPath = Storage::disk('gcs')->putFile('events', $file);
             $validated['image'] = Storage::disk('gcs')->url($newPath);
@@ -104,7 +102,7 @@ class EventController extends Controller
 
     public function destroy(Event $event)
     {
-        // ✅ DELETE ORPHANED IMAGE FROM GCS
+        // ✅ DELETE IMAGE FROM GCS
         if ($event->image) {
             $path = str_replace(Storage::disk('gcs')->url(''), '', $event->image);
             Storage::disk('gcs')->delete($path);
