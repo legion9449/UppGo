@@ -45,9 +45,7 @@ class EventController extends Controller
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             
-            $path = Storage::disk('gcs')->putFile('events', $file, [
-                'visibility' => 'no_acl'
-            ]);
+           $path = Storage::disk('gcs')->putFile('events', $file);
 
             $validated['image'] = Storage::disk('gcs')->url($path);
         }

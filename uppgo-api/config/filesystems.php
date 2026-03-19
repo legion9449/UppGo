@@ -50,8 +50,8 @@ return [
             'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
             'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET'),
             
-            // ✅ THE FIX: Tells the driver not to apply legacy file-level permissions
-            'visibility' => 'no_acl', 
+            // ✅ THE OFFICIAL FIX FOR UNIFORM BUCKETS
+            'visibility_handler' => \League\Flysystem\GoogleCloudStorage\UniformBucketLevelAccessVisibility::class,
             
             'key_file' => null,
             'throw' => true, 
