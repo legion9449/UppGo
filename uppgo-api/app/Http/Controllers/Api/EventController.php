@@ -34,21 +34,20 @@ class EventController extends Controller
             'category' => 'nullable|string',
             'eventType' => 'nullable|string',
             'description' => 'nullable|string',
-            'image' => 'nullable|image|max:2048', // Expects an actual file, max 2MB
+            'image' => 'nullable|image|max:2048',
             
             'latitude' => 'nullable',
             'longitude' => 'nullable',
-            'user_id' => 'required|integer', // Ensure user_id is validated
+            'user_id' => 'required|integer',
         ]);
 
-        // ✅ IMAGE UPLOAD TO GOOGLE CLOUD STORAGE
+        // ✅ IMAGE UPLOAD TO GCS 
+        // (Fix: Removed 'public' parameter to respect Uniform Bucket Access)
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             
-            // Upload the file to the 'events' folder and ensure it is public
-            $path = Storage::disk('gcs')->putFile('events', $file, 'public');
+            $path = Storage::disk('gcs')->putFile('events', $file);
 
-            // Automatically generate the clean public URL
             $validated['image'] = Storage::disk('gcs')->url($path);
         }
 
@@ -81,16 +80,16 @@ class EventController extends Controller
         // ✅ IMAGE UPDATE (GCS)
         if ($request->hasFile('image')) {
             
-            // 1. Delete the old image first to prevent storage bloat
+            // Delete the old image first to prevent storage bloat
             if ($event->image) {
-                // Strip the base URL to get just the path (e.g., "events/filename.jpg")
                 $oldPath = str_replace(Storage::disk('gcs')->url(''), '', $event->image);
                 Storage::disk('gcs')->delete($oldPath);
             }
 
-            // 2. Upload the new image
+            // Upload the new image 
+            // (Fix: Removed 'public' parameter)
             $file = $request->file('image');
-            $newPath = Storage::disk('gcs')->putFile('events', $file, 'public');
+            $newPath = Storage::disk('gcs')->putFile('events', $file);
             $validated['image'] = Storage::disk('gcs')->url($newPath);
         }
 

@@ -49,11 +49,13 @@ return [
             'driver' => 'gcs',
             'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
             'bucket' => env('GOOGLE_CLOUD_STORAGE_BUCKET'),
-            'visibility' => 'public',
-
-            // ✅ IMPORTANT for Cloud Run
+            
+            // ✅ Fix: Visibility removed to avoid Uniform Access conflicts
+            
             'key_file' => null,
-            'throw' => true,
+            
+            // ✅ Fix: Force Laravel to throw an error if the upload fails
+            'throw' => true, 
         ],
 
     ],
