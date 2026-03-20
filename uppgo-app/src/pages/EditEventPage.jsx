@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api";
+import LocationPicker from "../components/LocationPicker";
 
 function EditEventPage() {
 
@@ -19,6 +20,12 @@ function EditEventPage() {
   });
 
   const [currentImage, setCurrentImage] = useState("");
+
+  // 🔥 NEW COORD STATE
+  const [coords, setCoords] = useState({
+    latitude: null,
+    longitude: null
+  });
 
   // ================= LOAD EVENT =================
   useEffect(() => {
@@ -43,6 +50,12 @@ function EditEventPage() {
 
         setCurrentImage(event.image);
 
+        // 🔥 LOAD EXISTING COORDS
+        setCoords({
+          latitude: event.latitude,
+          longitude: event.longitude
+        });
+
       })
       .catch((err) => console.log(err));
 
@@ -50,49 +63,20 @@ function EditEventPage() {
 
   // ================= INPUT CHANGE =================
   const handleChange = (e) => {
-
     const { name, value, type, checked } = e.target;
 
     setForm({
       ...form,
       [name]: type === "checkbox" ? checked : value
     });
-
   };
 
   // ================= IMAGE =================
   const handleImageChange = (e) => {
-
     setForm({
       ...form,
       image: e.target.files[0]
     });
-
-  };
-
-  // ================= GEOLOCATION =================
-  const geocodeAddress = async (address) => {
-    try {
-
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`
-      );
-
-      const data = await res.json();
-
-      if (data && data.length > 0) {
-        return {
-          latitude: data[0].lat,
-          longitude: data[0].lon
-        };
-      }
-
-      return null;
-
-    } catch (err) {
-      console.error("Geocode error:", err);
-      return null;
-    }
   };
 
   // ================= SUBMIT =================
@@ -105,18 +89,12 @@ function EditEventPage() {
       return;
     }
 
+    if (!coords.latitude || !coords.longitude) {
+      alert("Please pick location on map");
+      return;
+    }
+
     try {
-
-      // 🔥 GET NEW COORDINATES
-      let coords = await geocodeAddress(form.location);
-
-      if (!coords) {
-        alert("Location not found, using default (Uppsala)");
-        coords = {
-          latitude: 59.8586,
-          longitude: 17.6389
-        };
-      }
 
       const formData = new FormData();
 
@@ -128,7 +106,7 @@ function EditEventPage() {
       formData.append("description", form.description);
       formData.append("featured", form.featured ? 1 : 0);
 
-      // ✅ IMPORTANT FIX
+      // 🔥 FROM MAP (NO MORE BUGS)
       formData.append("latitude", coords.latitude);
       formData.append("longitude", coords.longitude);
 
@@ -136,21 +114,15 @@ function EditEventPage() {
         formData.append("image", form.image);
       }
 
-      await api.post(`/events/${id}?_method=PUT`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data"
-        }
-      });
+      await api.post(`/events/${id}?_method=PUT`, formData);
 
       alert("✅ Event updated successfully");
 
       navigate(-1);
 
     } catch (error) {
-
       console.log(error);
       alert("❌ Update failed");
-
     }
 
   };
@@ -165,13 +137,8 @@ function EditEventPage() {
           Admin Edit Event
         </h2>
 
-        <p className="text-gray-500 mb-6">
-          Changes will update the live approved event.
-        </p>
-
         <form onSubmit={handleSubmit} className="space-y-4">
 
-          {/* TITLE */}
           <input
             name="title"
             value={form.title}
@@ -181,7 +148,6 @@ function EditEventPage() {
             required
           />
 
-          {/* DATE */}
           <input
             type="date"
             name="date"
@@ -191,7 +157,6 @@ function EditEventPage() {
             required
           />
 
-          {/* LOCATION */}
           <input
             name="location"
             value={form.location}
@@ -201,7 +166,19 @@ function EditEventPage() {
             required
           />
 
-          {/* CATEGORY */}
+          {/* 🔥 MAP PICKER */}
+          <div>
+            <p className="font-semibold mb-2">Pick Location on Map</p>
+
+            <LocationPicker onSelect={(c) => setCoords(c)} />
+
+            {coords.latitude && (
+              <p className="text-sm text-gray-500 mt-2">
+                {coords.latitude}, {coords.longitude}
+              </p>
+            )}
+          </div>
+
           <input
             name="category"
             value={form.category}
@@ -210,7 +187,6 @@ function EditEventPage() {
             className="w-full border p-3 rounded-lg"
           />
 
-          {/* EVENT TYPE */}
           <select
             name="eventType"
             value={form.eventType}
@@ -223,7 +199,6 @@ function EditEventPage() {
             <option value="Non-Nations">Non-Nations</option>
           </select>
 
-          {/* DESCRIPTION */}
           <textarea
             name="description"
             value={form.description}
@@ -233,29 +208,19 @@ function EditEventPage() {
             rows="4"
           />
 
-          {/* CURRENT IMAGE */}
           {currentImage && (
-            <div>
-              <p className="font-semibold mb-2">Current Image</p>
-              <img
-                src={currentImage}
-                alt="Event"
-                className="w-full h-60 object-cover rounded-lg"
-              />
-            </div>
+            <img
+              src={currentImage}
+              className="w-full h-60 object-cover rounded-lg"
+            />
           )}
 
-          {/* NEW IMAGE */}
-          <div>
-            <p className="font-semibold mb-2">Upload New Image</p>
-            <input
-              type="file"
-              onChange={handleImageChange}
-              className="w-full border p-3 rounded-lg"
-            />
-          </div>
+          <input
+            type="file"
+            onChange={handleImageChange}
+            className="w-full border p-3 rounded-lg"
+          />
 
-          {/* ACTIONS */}
           <div className="flex justify-between pt-4">
 
             <button
@@ -282,7 +247,6 @@ function EditEventPage() {
     </div>
 
   );
-
 }
 
 export default EditEventPage;
