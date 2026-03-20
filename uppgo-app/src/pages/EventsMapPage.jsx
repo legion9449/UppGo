@@ -1,7 +1,33 @@
 import { useEffect, useState } from "react";
 import api from "../api";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { Link } from "react-router-dom";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// ✅ FIX MARKER ICON (VERY IMPORTANT)
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png",
+  iconUrl:
+    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
+  shadowUrl:
+    "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
+});
+
+// ✅ FIX MAP SIZE BUG
+function FixMapSize() {
+  const map = useMap();
+
+  useEffect(() => {
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+  }, [map]);
+
+  return null;
+}
 
 function EventsMapPage() {
 
@@ -11,10 +37,8 @@ function EventsMapPage() {
 
     api.get("/events")
       .then((res) => {
-
         const allEvents = res.data.data || res.data;
         setEvents(allEvents);
-
       })
       .catch((err) => console.error(err));
 
@@ -29,63 +53,64 @@ function EventsMapPage() {
           Events Map
         </h1>
 
-        <MapContainer
-          center={[59.8586, 17.6389]}
-          zoom={13}
-          scrollWheelZoom={true}
-          style={{ height: "600px", width: "100%" }}
-          className="rounded-2xl shadow-lg"
-        >
+        {/* ✅ FIXED CONTAINER */}
+        <div className="relative z-0 w-full h-[600px] rounded-2xl overflow-hidden shadow-lg">
 
-          <TileLayer
-            attribution="&copy; OpenStreetMap contributors"
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+          <MapContainer
+            center={[59.8586, 17.6389]}
+            zoom={13}
+            scrollWheelZoom={true}
+            className="w-full h-full"
+          >
 
-          {events.map((event) => {
+            <FixMapSize />
 
-            if (!event.latitude || !event.longitude) return null;
+            <TileLayer
+              attribution="&copy; OpenStreetMap contributors"
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
 
-            return (
+            {events.map((event) => {
 
-              <Marker
-                key={event.id}
-                position={[
-                  Number(event.latitude),
-                  Number(event.longitude)
-                ]}
-              >
+              if (!event.latitude || !event.longitude) return null;
 
-                <Popup>
+              return (
+                <Marker
+                  key={event.id}
+                  position={[
+                    Number(event.latitude),
+                    Number(event.longitude)
+                  ]}
+                >
+                  <Popup>
 
-                  <div>
+                    <div>
 
-                    <h3 className="font-bold mb-1">
-                      {event.title}
-                    </h3>
+                      <h3 className="font-bold mb-1">
+                        {event.title}
+                      </h3>
 
-                    <p className="text-sm text-gray-600">
-                      {event.date}
-                    </p>
+                      <p className="text-sm text-gray-600">
+                        {event.date}
+                      </p>
 
-                    <Link
-                      to={`/events/${event.id}`}
-                      className="text-blue-600 text-sm"
-                    >
-                      View Event
-                    </Link>
+                      <Link
+                        to={`/events/${event.id}`}
+                        className="text-blue-600 text-sm"
+                      >
+                        View Event
+                      </Link>
 
-                  </div>
+                    </div>
 
-                </Popup>
+                  </Popup>
+                </Marker>
+              );
+            })}
 
-              </Marker>
+          </MapContainer>
 
-            );
-
-          })}
-
-        </MapContainer>
+        </div>
 
       </div>
 

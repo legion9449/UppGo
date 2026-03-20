@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api";
-import { API_URL } from "../config";
 
 function EditEventPage() {
 
@@ -13,7 +12,7 @@ function EditEventPage() {
     date: "",
     location: "",
     category: "",
-    eventType: "Non-Nations",
+    eventType: "",
     description: "",
     featured: false,
     image: null
@@ -21,6 +20,7 @@ function EditEventPage() {
 
   const [currentImage, setCurrentImage] = useState("");
 
+  // ================= LOAD EVENT =================
   useEffect(() => {
 
     window.scrollTo(0, 0);
@@ -35,7 +35,7 @@ function EditEventPage() {
           date: event.date || "",
           location: event.location || "",
           category: event.category || "",
-          eventType: event.eventType || "Non-Nations",
+          eventType: event.eventType || "",
           description: event.description || "",
           featured: event.featured || false,
           image: null
@@ -44,12 +44,11 @@ function EditEventPage() {
         setCurrentImage(event.image);
 
       })
-      .catch((err) => {
-        console.log(err);
-      });
+      .catch((err) => console.log(err));
 
   }, [id]);
 
+  // ================= INPUT CHANGE =================
   const handleChange = (e) => {
 
     const { name, value, type, checked } = e.target;
@@ -61,6 +60,7 @@ function EditEventPage() {
 
   };
 
+  // ================= IMAGE =================
   const handleImageChange = (e) => {
 
     setForm({
@@ -70,11 +70,53 @@ function EditEventPage() {
 
   };
 
+  // ================= GEOLOCATION =================
+  const geocodeAddress = async (address) => {
+    try {
+
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(address)}`
+      );
+
+      const data = await res.json();
+
+      if (data && data.length > 0) {
+        return {
+          latitude: data[0].lat,
+          longitude: data[0].lon
+        };
+      }
+
+      return null;
+
+    } catch (err) {
+      console.error("Geocode error:", err);
+      return null;
+    }
+  };
+
+  // ================= SUBMIT =================
   const handleSubmit = async (e) => {
 
     e.preventDefault();
 
+    if (!form.eventType) {
+      alert("Please select event type");
+      return;
+    }
+
     try {
+
+      // 🔥 GET NEW COORDINATES
+      let coords = await geocodeAddress(form.location);
+
+      if (!coords) {
+        alert("Location not found, using default (Uppsala)");
+        coords = {
+          latitude: 59.8586,
+          longitude: 17.6389
+        };
+      }
 
       const formData = new FormData();
 
@@ -86,6 +128,10 @@ function EditEventPage() {
       formData.append("description", form.description);
       formData.append("featured", form.featured ? 1 : 0);
 
+      // ✅ IMPORTANT FIX
+      formData.append("latitude", coords.latitude);
+      formData.append("longitude", coords.longitude);
+
       if (form.image) {
         formData.append("image", form.image);
       }
@@ -96,14 +142,14 @@ function EditEventPage() {
         }
       });
 
-      alert("Event updated successfully");
+      alert("✅ Event updated successfully");
 
       navigate(-1);
 
     } catch (error) {
 
       console.log(error);
-      alert("Update failed");
+      alert("❌ Update failed");
 
     }
 
@@ -125,6 +171,7 @@ function EditEventPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
 
+          {/* TITLE */}
           <input
             name="title"
             value={form.title}
@@ -134,6 +181,7 @@ function EditEventPage() {
             required
           />
 
+          {/* DATE */}
           <input
             type="date"
             name="date"
@@ -143,6 +191,7 @@ function EditEventPage() {
             required
           />
 
+          {/* LOCATION */}
           <input
             name="location"
             value={form.location}
@@ -152,6 +201,7 @@ function EditEventPage() {
             required
           />
 
+          {/* CATEGORY */}
           <input
             name="category"
             value={form.category}
@@ -160,16 +210,20 @@ function EditEventPage() {
             className="w-full border p-3 rounded-lg"
           />
 
+          {/* EVENT TYPE */}
           <select
             name="eventType"
             value={form.eventType}
             onChange={handleChange}
             className="w-full border p-3 rounded-lg"
+            required
           >
-            <option>Nations</option>
-            <option>Non-Nations</option>
+            <option value="">Select Event Type</option>
+            <option value="Nations">Nations</option>
+            <option value="Non-Nations">Non-Nations</option>
           </select>
 
+          {/* DESCRIPTION */}
           <textarea
             name="description"
             value={form.description}
@@ -179,38 +233,29 @@ function EditEventPage() {
             rows="4"
           />
 
+          {/* CURRENT IMAGE */}
           {currentImage && (
-
             <div>
-
-              <p className="font-semibold mb-2">
-                Current Image
-              </p>
-
+              <p className="font-semibold mb-2">Current Image</p>
               <img
                 src={currentImage}
                 alt="Event"
                 className="w-full h-60 object-cover rounded-lg"
               />
-
             </div>
-
           )}
 
+          {/* NEW IMAGE */}
           <div>
-
-            <p className="font-semibold mb-2">
-              Upload New Image
-            </p>
-
+            <p className="font-semibold mb-2">Upload New Image</p>
             <input
               type="file"
               onChange={handleImageChange}
               className="w-full border p-3 rounded-lg"
             />
-
           </div>
 
+          {/* ACTIONS */}
           <div className="flex justify-between pt-4">
 
             <button

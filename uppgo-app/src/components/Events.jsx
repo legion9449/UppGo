@@ -5,7 +5,7 @@ import api from "../api";
 function Events() {
 
   const [events, setEvents] = useState([]);
-  const [favorites, setFavorites] = useState([]); // ✅ NEW
+  const [favorites, setFavorites] = useState([]);
 
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
@@ -15,18 +15,16 @@ function Events() {
   const [lastPage, setLastPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  const user = JSON.parse(localStorage.getItem("user")); // ✅ USER
+  const user = JSON.parse(localStorage.getItem("user"));
 
-  // ================= FETCH EVENTS =================
+  // ================= LOAD EVENTS =================
   useEffect(() => {
     fetchEvents();
   }, [page, search, categoryFilter, eventTypeFilter]);
 
   // ================= LOAD FAVORITES =================
   useEffect(() => {
-    if (user) {
-      loadFavorites();
-    }
+    if (user) loadFavorites();
   }, []);
 
   const fetchEvents = async () => {
@@ -37,8 +35,8 @@ function Events() {
 
       const res = await api.get("/events", {
         params: {
-          page: page,
-          search: search,
+          page,
+          search,
           category: categoryFilter,
           eventType: eventTypeFilter
         }
@@ -48,7 +46,7 @@ function Events() {
       setLastPage(res.data.last_page);
 
     } catch (err) {
-      console.error(err);
+      console.log(err);
     }
 
     setLoading(false);
@@ -57,8 +55,7 @@ function Events() {
   const loadFavorites = async () => {
     try {
       const res = await api.get(`/favorites/${user.id}`);
-      const ids = res.data.map(e => e.id);
-      setFavorites(ids);
+      setFavorites(res.data.map(e => e.id));
     } catch (err) {
       console.log(err);
     }
@@ -68,7 +65,7 @@ function Events() {
   const toggleFavorite = async (eventId) => {
 
     if (!user) {
-      alert("Please login first");
+      alert("Login first");
       return;
     }
 
@@ -80,9 +77,9 @@ function Events() {
       });
 
       if (res.data.status === "added") {
-        setFavorites([...favorites, eventId]);
+        setFavorites(prev => [...prev, eventId]);
       } else {
-        setFavorites(favorites.filter(id => id !== eventId));
+        setFavorites(prev => prev.filter(id => id !== eventId));
       }
 
     } catch (err) {
@@ -90,21 +87,8 @@ function Events() {
     }
   };
 
-  // ================= FILTER OPTIONS =================
-  const categories = [
-    "All",
-    "Music",
-    "Food",
-    "Nature",
-    "Sports",
-    "Culture"
-  ];
-
-  const eventTypes = [
-    "All",
-    "Nations",
-    "Non-Nations"
-  ];
+  const categories = ["All", "Music", "Food", "Nature", "Sports", "Culture"];
+  const eventTypes = ["All", "Nations", "Non-Nations"];
 
   return (
     <section className="py-20">
@@ -113,10 +97,7 @@ function Events() {
 
         {/* HEADER */}
         <div className="mb-10">
-          <h2 className="text-4xl font-bold mb-3">
-            Upcoming Events
-          </h2>
-
+          <h2 className="text-4xl font-bold mb-3">Upcoming Events</h2>
           <p className="text-gray-600 max-w-2xl">
             Discover events happening in Uppsala.
           </p>
@@ -134,7 +115,7 @@ function Events() {
           className="w-full border p-3 mb-6 rounded"
         />
 
-        {/* CATEGORY FILTER */}
+        {/* CATEGORY */}
         <div className="flex flex-wrap gap-3 mb-6">
           {categories.map((cat) => (
             <button
@@ -154,7 +135,7 @@ function Events() {
           ))}
         </div>
 
-        {/* EVENT TYPE FILTER */}
+        {/* TYPE */}
         <div className="mb-10">
           <select
             value={eventTypeFilter}
@@ -165,20 +146,16 @@ function Events() {
             className="border p-3 rounded"
           >
             {eventTypes.map((type) => (
-              <option key={type}>
-                {type}
-              </option>
+              <option key={type}>{type}</option>
             ))}
           </select>
         </div>
 
-        {/* EVENTS GRID */}
+        {/* EVENTS */}
         {loading ? (
           <p className="text-center">Loading...</p>
         ) : events.length === 0 ? (
-          <p className="text-center text-gray-500">
-            No events found
-          </p>
+          <p className="text-center text-gray-500">No events found</p>
         ) : (
           <div className="grid md:grid-cols-3 gap-8">
 
@@ -190,16 +167,16 @@ function Events() {
                 <Link
                   to={`/events/${event.id}`}
                   key={event.id}
-                  className="rounded-xl overflow-hidden shadow-lg group relative"
+                  className="relative rounded-xl overflow-hidden shadow-lg group"
                 >
 
-                  {/* ❤️ FAVORITE BUTTON */}
+                  {/* ❤️ HEART */}
                   <button
                     onClick={(e) => {
                       e.preventDefault();
                       toggleFavorite(event.id);
                     }}
-                    className="absolute top-3 right-3 text-2xl z-10"
+                    className="absolute top-3 right-3 text-2xl z-10 transition transform hover:scale-110"
                   >
                     {isFavorite ? "❤️" : "🤍"}
                   </button>
@@ -213,19 +190,11 @@ function Events() {
                   )}
 
                   <div className="p-4">
-
                     <h3 className="text-xl font-bold mb-2">
                       {event.title}
                     </h3>
-
-                    <p className="text-gray-500 text-sm">
-                      {event.date}
-                    </p>
-
-                    <p className="text-gray-600 text-sm">
-                      {event.location}
-                    </p>
-
+                    <p className="text-gray-500 text-sm">{event.date}</p>
+                    <p className="text-gray-600 text-sm">{event.location}</p>
                   </div>
 
                 </Link>
@@ -235,8 +204,7 @@ function Events() {
           </div>
         )}
 
-        {/* ================= PAGINATION ================= */}
-
+        {/* PAGINATION */}
         <div className="flex justify-center gap-4 mt-10">
 
           <button
@@ -247,9 +215,7 @@ function Events() {
             Prev
           </button>
 
-          <span className="flex items-center">
-            Page {page} of {lastPage}
-          </span>
+          <span>Page {page} of {lastPage}</span>
 
           <button
             disabled={page === lastPage}

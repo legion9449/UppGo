@@ -21,3 +21,16 @@
 .animate-fadeIn {
   animation: fadeIn 0.2s ease-in-out;
 }
+
+/* 🔥 FIX LEAFLET OVERLAP */
+.leaflet-container {
+  z-index: 0 !important;
+}
+
+.leaflet-pane {
+  z-index: 0 !important;
+}
+
+.leaflet-control {
+  z-index: 0 !important;
+}

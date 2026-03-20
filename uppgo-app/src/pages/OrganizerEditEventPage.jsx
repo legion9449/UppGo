@@ -12,97 +12,98 @@ function OrganizerEditEventPage() {
     date: "",
     location: "",
     category: "",
-    eventType: "Non-Nations",
+    eventType: "", // ✅ FIX (no forced default)
     description: "",
     image: null
   });
 
   const [currentImage, setCurrentImage] = useState("");
-  const [preview, setPreview] = useState(null); // ✅ NEW
+  const [preview, setPreview] = useState(null);
 
   useEffect(() => {
 
-    window.scrollTo(0,0);
+    window.scrollTo(0, 0);
 
     api.get(`/events/${id}`)
-      .then((res)=>{
+      .then((res) => {
 
         const event = res.data;
 
         setForm({
-          title: event.title,
-          date: event.date,
-          location: event.location,
-          category: event.category,
-          eventType: event.eventType || "Non-Nations",
-          description: event.description,
+          title: event.title || "",
+          date: event.date || "",
+          location: event.location || "",
+          category: event.category || "",
+          eventType: event.eventType || "", // ✅ FIX
+          description: event.description || "",
           image: null
         });
 
         setCurrentImage(event.image);
 
       })
-      .catch((err)=>console.log(err));
+      .catch((err) => console.log(err));
 
   }, [id]);
 
-  const handleChange = (e)=>{
+  const handleChange = (e) => {
 
-    const {name,value} = e.target;
+    const { name, value } = e.target;
 
     setForm({
       ...form,
-      [name]:value
+      [name]: value
     });
 
   };
 
-  const handleImageChange = (e)=>{
+  const handleImageChange = (e) => {
 
     const file = e.target.files[0];
 
     setForm({
       ...form,
-      image:file
+      image: file
     });
 
-    // ✅ Preview new image
     if (file) {
       setPreview(URL.createObjectURL(file));
     }
 
   };
 
-  const handleSubmit = async (e)=>{
+  const handleSubmit = async (e) => {
 
     e.preventDefault();
 
-    try{
+    // ✅ VALIDATION
+    if (!form.eventType) {
+      alert("Please select event type");
+      return;
+    }
+
+    try {
 
       const formData = new FormData();
 
-      formData.append("title",form.title);
-      formData.append("date",form.date);
-      formData.append("location",form.location);
-      formData.append("category",form.category);
-      formData.append("eventType",form.eventType);
-      formData.append("description",form.description);
+      formData.append("title", form.title);
+      formData.append("date", form.date);
+      formData.append("location", form.location);
+      formData.append("category", form.category);
+      formData.append("eventType", form.eventType); // ✅ FIXED
+      formData.append("description", form.description);
 
-      if(form.image){
-        formData.append("image",form.image);
+      if (form.image) {
+        formData.append("image", form.image);
       }
 
-      await api.post(`/events/${id}?_method=PUT`,formData, {
-        headers:{
-          "Content-Type":"multipart/form-data"
-        }
-      });
+      await api.post(`/events/${id}?_method=PUT`, formData);
 
       alert("✅ Event updated");
 
       navigate("/organizer");
 
-    }catch(err){
+    } catch (err) {
 
       console.log(err);
       alert("❌ Update failed");
@@ -155,14 +156,17 @@ function OrganizerEditEventPage() {
             className="w-full border p-3 rounded"
           />
 
+          {/* ✅ FIXED SELECT */}
           <select
             name="eventType"
             value={form.eventType}
             onChange={handleChange}
             className="w-full border p-3 rounded"
+            required
           >
-            <option>Nations</option>
-            <option>Non-Nations</option>
+            <option value="">Select Event Type</option>
+            <option value="Nations">Nations</option>
+            <option value="Non-Nations">Non-Nations</option>
           </select>
 
           <textarea
@@ -180,7 +184,7 @@ function OrganizerEditEventPage() {
               <p className="mb-2 font-semibold">Current Image</p>
 
               <img
-                src={currentImage || "/default-event.jpg"}
+                src={currentImage}
                 className="w-full h-60 object-cover rounded"
                 alt="Current"
               />

@@ -5,7 +5,6 @@ import api from "../api";
 function OrganizerAddEventPage() {
 
   const navigate = useNavigate();
-
   const user = JSON.parse(localStorage.getItem("user"));
 
   const [form, setForm] = useState({
@@ -13,7 +12,7 @@ function OrganizerAddEventPage() {
     date: "",
     location: "",
     category: "",
-    eventType: "Non-Nations",
+    eventType: "", // ✅ FIX: no default
     description: ""
   });
 
@@ -21,7 +20,7 @@ function OrganizerAddEventPage() {
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // HANDLE INPUT
+  // ================= INPUT =================
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -31,7 +30,7 @@ function OrganizerAddEventPage() {
     });
   };
 
-  // IMAGE PREVIEW
+  // ================= IMAGE =================
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     setImage(file);
@@ -41,7 +40,7 @@ function OrganizerAddEventPage() {
     }
   };
 
-  // 🌍 GEOLOCATION FUNCTION (AUTO LAT/LNG)
+  // ================= GEO =================
   const geocodeAddress = async (address) => {
     try {
       const res = await fetch(
@@ -65,17 +64,23 @@ function OrganizerAddEventPage() {
     }
   };
 
-  // SUBMIT
+  // ================= SUBMIT =================
   const handleSubmit = async (e) => {
 
     e.preventDefault();
+
+    // ✅ VALIDATION
+    if (!form.eventType) {
+      alert("Please select event type");
+      return;
+    }
+
     setLoading(true);
 
     try {
 
       let coords = await geocodeAddress(form.location);
 
-      // 🔥 fallback (IMPORTANT)
       if (!coords) {
         alert("Location not found, using default (Uppsala)");
         coords = {
@@ -90,17 +95,14 @@ function OrganizerAddEventPage() {
       formData.append("date", form.date);
       formData.append("location", form.location);
       formData.append("category", form.category);
-      formData.append("eventType", form.eventType);
+      formData.append("eventType", form.eventType); // ✅ FIXED
       formData.append("description", form.description);
 
-      // ✅ AUTO GEO DATA
       formData.append("latitude", coords.latitude);
       formData.append("longitude", coords.longitude);
 
-      // ✅ USER LINK
       formData.append("user_id", user.id);
 
-      // ✅ IMAGE
       if (image) {
         formData.append("image", image);
       }
@@ -168,12 +170,15 @@ function OrganizerAddEventPage() {
             className="w-full border p-3 rounded"
           />
 
-          {/* EVENT TYPE */}
+          {/* ✅ EVENT TYPE (FIXED CONTROLLED) */}
           <select
             name="eventType"
+            value={form.eventType} // 🔥 FIX
             onChange={handleChange}
             className="w-full border p-3 rounded"
+            required
           >
+            <option value="">Select Event Type</option>
             <option value="Nations">Nations</option>
             <option value="Non-Nations">Non-Nations</option>
           </select>

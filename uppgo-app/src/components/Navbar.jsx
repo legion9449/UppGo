@@ -7,7 +7,7 @@ function Navbar() {
   const [open, setOpen] = useState(false);
 
   const navigate = useNavigate();
-  const location = useLocation(); // ✅ NEW
+  const location = useLocation();
   const dropdownRef = useRef();
 
   // ================= LOAD USER =================
@@ -30,7 +30,7 @@ function Navbar() {
 
   // ================= CLOSE ON ROUTE CHANGE =================
   useEffect(() => {
-    setOpen(false); // ✅ THIS FIXES YOUR ISSUE
+    setOpen(false);
   }, [location.pathname]);
 
   // ================= CLOSE ON OUTSIDE CLICK =================
@@ -55,14 +55,14 @@ function Navbar() {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
-    setOpen(false); // ✅ ALSO CLOSE HERE
+    setOpen(false);
     navigate("/login");
   };
 
   // ================= DASHBOARD REDIRECT =================
   const goDashboard = () => {
 
-    setOpen(false); // already good
+    setOpen(false);
 
     if (!user) return;
 
@@ -73,7 +73,7 @@ function Navbar() {
 
   return (
 
-    <nav className="fixed top-0 left-0 w-full bg-black text-white px-8 py-5 flex justify-between items-center z-50">
+    <nav className="fixed top-0 left-0 w-full bg-black text-white px-8 py-5 flex justify-between items-center z-[9999]">
 
       <Link to="/" className="text-2xl font-bold">
         UppGo
